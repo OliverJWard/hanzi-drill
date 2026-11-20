@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
 <title>Hanzi Drill · HSK</title>
+<!-- installable web app (used when served over https; harmless when opened as a local file) -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#b8322a" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141413" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <style>
 :root{
   --bg:#f7f6f2;--card:#fff;--ink:#1d1c1a;--mute:#74726c;--line:#e5e3dc;--chip:#efede6;
@@ -1319,8 +1325,26 @@ document.addEventListener('keydown',e=>{
 const flush=()=>{try{localStorage.setItem(KEY,JSON.stringify(store));}catch(e){}writeNow();};
 window.addEventListener('pagehide',flush);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)flush();});
+/* web app: offline cache (sw.js) and persistent storage, only when served over http(s).
+   Progress always stays in this browser's local storage; nothing is uploaded. */
+function initWebApp(){
+  if(!/^https?:$/.test(location.protocol))return;
+  // ask the browser not to clear our storage (progress) when the device is low on space
+  if(navigator.storage&&navigator.storage.persist)navigator.storage.persisted().then(p=>p||navigator.storage.persist()).catch(()=>{});
+  if(!('serviceWorker' in navigator))return;
+  const first=!navigator.serviceWorker.controller;
+  navigator.serviceWorker.register('sw.js').then(reg=>{
+    reg.addEventListener('updatefound',()=>{
+      const w=reg.installing;if(!w)return;
+      w.addEventListener('statechange',()=>{
+        if(w.state==='installed')toast(first?'Ready to use offline':'Update downloaded. It applies next time you open the app.');
+      });
+    });
+  }).catch(()=>{});
+}
 render();
 initFile();
+initWebApp();
 })();
 </script>
 </body>
