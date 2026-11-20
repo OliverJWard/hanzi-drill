@@ -1,0 +1,1207 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Hanzi Drill · HSK</title>
+<style>
+:root{
+  --bg:#f7f6f2;--card:#fff;--ink:#1d1c1a;--mute:#74726c;--line:#e5e3dc;--chip:#efede6;
+  --acc:#b8322a;--accink:#fff;--ok:#2b8a3e;--warn:#d9730d;--bad:#c92a2a;
+  --t1:#e03131;--t2:#2f9e44;--t3:#1c7ed6;--t4:#7048e8;--t5:#868e96;
+  --s-new:#ced4da;--s-learn:#f59f00;--s-rev:#4dabf7;--s-known:#40c057;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#141413;--card:#1e1e1c;--ink:#edece7;--mute:#9b988f;--line:#2f2e2a;--chip:#2a2926;
+  --acc:#e5675d;--accink:#1a0a08;--ok:#51cf66;--warn:#ffa94d;--bad:#ff6b6b;
+  --t1:#ff6b6b;--t2:#51cf66;--t3:#74c0fc;--t4:#b197fc;--t5:#adb5bd;
+  --s-new:#495057;
+}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+.hz,[lang="zh-Hans"]{font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC","Source Han Sans SC","Noto Sans SC","WenQuanYi Micro Hei",sans-serif}
+#app{max-width:640px;margin:0 auto;padding:16px 16px 64px}
+h1{margin:0;font-size:22px}
+.mute{color:var(--mute)}.sm{font-size:13px}.c{text-align:center}
+.hd{display:flex;gap:14px;align-items:center;margin:4px 0 8px}
+.logo{font-size:44px;line-height:1;color:var(--acc);font-weight:700}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0}
+.card.center{text-align:center}
+.card.tap{cursor:pointer;padding:28px 16px}
+.lbl{font-size:13px;color:var(--mute);margin:12px 0 6px;text-transform:uppercase;letter-spacing:.05em}
+.lbl:first-child{margin-top:0}
+.lbl b{color:var(--ink);text-transform:none;letter-spacing:0}
+.btn{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:10px 14px;border-radius:12px;cursor:pointer}
+.btn.pri{background:var(--acc);color:var(--accink);border-color:transparent;font-weight:600}
+.btn.ghost{background:transparent}
+.btn.block{display:block;width:100%;margin-top:10px}
+.btn:disabled{opacity:.45;cursor:default}
+.btn:focus-visible,.opt:focus-visible,input:focus-visible,select:focus-visible,.lvc:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+input,select{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+input[type=checkbox]{width:auto}
+.seg{display:flex;gap:4px;background:var(--chip);padding:4px;border-radius:12px}
+.seg button{flex:1;border:0;background:transparent;color:var(--ink);padding:8px 6px;border-radius:9px;font:inherit;font-size:14px;cursor:pointer}
+.seg button.on{background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.18);font-weight:600}
+.quick{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.chip{font:inherit;font-size:14px;border:0;background:var(--chip);color:var(--ink);padding:6px 12px;border-radius:999px;cursor:pointer}
+.chip.on{background:var(--acc);color:var(--accink)}
+.chip.hz{font-size:22px;padding:4px 14px}
+.lvls{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.lvc{font:inherit;display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:9px 12px;border-radius:12px;cursor:pointer}
+.lvc small{color:var(--mute);font-size:12px}
+.lvc.on{background:var(--acc);border-color:transparent;color:var(--accink)}
+.lvc.on small{color:inherit;opacity:.85}
+.lv{display:inline-block;font-size:11px;font-weight:600;line-height:1;color:var(--mute);background:var(--chip);border-radius:6px;padding:3px 6px;vertical-align:middle;white-space:nowrap}
+.bar{display:flex;height:10px;border-radius:6px;overflow:hidden;background:var(--chip);margin-top:16px}
+.bar i{display:block}
+.s-new{background:var(--s-new)}.s-learn{background:var(--s-learn)}.s-rev{background:var(--s-rev)}.s-known{background:var(--s-known)}
+.legend{display:flex;flex-wrap:wrap;gap:2px 14px;font-size:13px;color:var(--mute);margin:8px 0 4px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;flex:none}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.row2{display:flex;justify-content:space-around;text-align:center}
+.row2 b{font-size:20px}
+.warn{background:color-mix(in srgb,var(--warn) 15%,transparent);border:1px solid var(--warn);border-radius:12px;padding:10px 12px;margin:10px 0;font-size:14px}
+.warn .btn{margin-top:8px;padding:6px 12px}
+.filebar{display:flex;gap:8px;align-items:center;justify-content:space-between;font-size:13px;color:var(--mute);margin:2px 2px 8px}
+.filebar a{color:var(--acc);cursor:pointer;text-decoration:underline}
+.filebox{background:var(--chip);border-radius:12px;padding:10px 12px;margin:12px 0;font-size:14px}
+details summary{cursor:pointer;font-weight:600}
+.setrow{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:12px 0}
+.chk{display:flex;gap:10px;align-items:flex-start;margin:12px 0;font-size:15px}
+.chk input{margin-top:4px}
+.top{display:flex;gap:10px;align-items:center;margin-bottom:8px}
+.top input[type=search]{flex:1;min-width:0}
+.prog{flex:1;height:8px;border-radius:5px;background:var(--chip);overflow:hidden}
+.prog i{display:block;height:100%;background:var(--acc);transition:width .2s}
+.big{font-size:min(34vw,140px);line-height:1.15;text-align:center}
+.big.w{font-size:min(20vw,84px)}
+.py{font-size:26px;text-align:center;margin:4px 0}
+.mean{font-size:18px;text-align:center}
+.sep{color:var(--mute)}
+.t1{color:var(--t1)}.t2{color:var(--t2)}.t3{color:var(--t3)}.t4{color:var(--t4)}.t5{color:var(--t5)}
+.nocolor .t1,.nocolor .t2,.nocolor .t3,.nocolor .t4,.nocolor .t5{color:inherit}
+.det h4{margin:18px 0 2px;font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--mute)}
+.words .wrow{display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"h p i" "h m i";gap:0 14px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.wh{grid-area:h;font-size:26px;min-width:56px}
+.wp{grid-area:p;font-size:17px}
+.wm{grid-area:m;color:var(--mute);font-size:14px}
+.wrow .ico{grid-area:i}
+.ico{border:0;background:transparent;font-size:20px;cursor:pointer;padding:4px 8px;border-radius:8px}
+.in{color:inherit;text-decoration:none}
+a.in{cursor:pointer;border-bottom:2px solid color-mix(in srgb,var(--acc) 45%,transparent)}
+.out{color:var(--mute);opacity:.65}
+.parts{display:grid;gap:6px}
+.part{display:grid;grid-template-columns:48px 90px 1fr;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line)}
+.ph{font-size:30px;text-align:center}
+.pm{color:var(--mute);font-size:14px}
+.rate{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.rate .btn{display:flex;flex-direction:column;align-items:center;padding:10px 2px;border-bottom:3px solid var(--line)}
+.rate small{color:var(--mute);min-height:1.2em}
+.r0{border-bottom-color:var(--bad)!important}.r1{border-bottom-color:var(--warn)!important}.r2{border-bottom-color:var(--ok)!important}.r3{border-bottom-color:var(--t3)!important}
+.ansrow{display:flex;gap:8px;margin-top:12px}
+.ansrow input{flex:1;min-width:0;font-size:20px}
+.hint{font-size:13px;color:var(--mute);margin:8px 2px}
+.hint a{color:var(--acc);cursor:pointer;text-decoration:underline}
+.ver{border-radius:12px;padding:10px 14px;margin:10px 0;border:1px solid var(--line)}
+.ver.ok{border-color:var(--ok);color:var(--ok)}.ver.warn{border-color:var(--warn);color:var(--warn)}.ver.bad{border-color:var(--bad);color:var(--bad)}
+.ver div{color:var(--ink);font-size:15px}
+.opts{display:grid;gap:8px;margin:10px 0}
+.opt{font:inherit;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:14px;border-radius:12px;cursor:pointer;font-size:18px}
+.opt:disabled{opacity:1;cursor:default}
+.opt.ok{border-color:var(--ok);box-shadow:inset 0 0 0 2px var(--ok)}
+.opt.bad{border-color:var(--bad);box-shadow:inset 0 0 0 2px var(--bad)}
+.ochz{font-size:30px}
+kbd{font:inherit;font-size:12px;color:var(--mute);border:1px solid var(--line);border-radius:5px;padding:0 5px;margin-right:6px}
+.brow{display:grid;grid-template-columns:34px 52px 1fr 14px;gap:8px;align-items:center;width:100%;text-align:left;font:inherit;color:inherit;background:transparent;border:0;border-bottom:1px solid var(--line);padding:8px 2px;cursor:pointer}
+.rk{color:var(--mute);font-size:12px;text-align:right}
+.bh{font-size:30px;text-align:center}
+.bm{display:flex;flex-direction:column;font-size:14px;min-width:0}
+.bm .mute{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+dialog{border:0;border-radius:18px;padding:0;width:min(560px,94vw);background:var(--card);color:var(--ink)}
+dialog::backdrop{background:rgba(0,0,0,.55)}
+.dlg{padding:18px;max-height:86vh;overflow:auto}
+.stat{margin-top:14px;font-size:13px}
+#toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;opacity:0;pointer-events:none;transition:.2s;z-index:99;font-size:14px;max-width:90vw}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<dialog id="dlg"></dialog>
+<div id="toast" role="status"></div>
+<noscript>This app needs JavaScript.</noscript>
+<script>
+/* ============================================================
+   HANZI DRILL · HSK 3.0 — single file, fully offline.
+
+   WORD LISTS come from the HSK JSON files of
+   github.com/drkameleon/complete-hsk-vocabulary (MIT), e.g.
+   wordlists/exclusive/new/1.json … 7.json  (level 7 = HSK 7–9).
+   They are converted to compact lines  hanzi|pinyin|meaning  per level
+   and embedded below (BUILTIN_LISTS). More files can be added at runtime
+   from Settings; the level is read from the file name (3.json = HSK 3).
+
+   A character's HSK level = lowest level of any word containing it.
+   Example words for a character = multi-character words whose characters
+   are ALL at that character's level or lower.
+   CHARS_RAW only supplies meanings for characters that are never a
+   standalone word in the lists.
+   ============================================================ */
+/* HSK JSON (drkameleon/complete-hsk-vocabulary) -> compact "hanzi|pinyin|meaning" lines */
+const HSKCONV=(function(){
+  const MK={a:'āáǎà',e:'ēéěè',i:'īíǐì',o:'ōóǒò',u:'ūúǔù',v:'ǖǘǚǜ'};
+  function mark(s){
+    const m=/^([a-z]+?)([1-5])?$/.exec(s);if(!m)return s;
+    const b=m[1],t=m[2]?+m[2]:5;
+    if(t===5)return b.replace(/v/g,'ü');
+    let i=b.search(/[ae]/);
+    if(i<0&&b.includes('ou'))i=b.indexOf('o');
+    if(i<0)for(let k=b.length-1;k>=0;k--)if('iouv'.includes(b[k])){i=k;break;}
+    if(i<0)return b;
+    return(b.slice(0,i)+MK[b[i]][t-1]+b.slice(i+1)).replace(/v/g,'ü');
+  }
+  const markPy=p=>p.split(' ').map(mark).join(' ');
+  const normPy=p=>String(p).replace(/ü|u:/g,'v').replace(/\s+/g,' ').trim();
+  const JUNK=/^(surname |variant of|old variant|also pr|see |abbr\. for|erhua variant|japanese variant)|\(archaic\)|archaic variant|unofficial variant|\(onom\.\)|\(dialect\)|abbr\. for|\(Tw\)|Taiwan pr\./i;
+  const clean=m=>String(m).replace(/\|/g,'/').replace(/\s+/g,' ').trim();
+  function toLine(e){
+    const hz=e.simplified,pos=(e.pos||[]).join('');
+    const particle=/[yu]/.test(pos);
+    let forms=(e.forms||[]).map((f,i)=>{
+      const raw=f.transcriptions&&f.transcriptions.numeric||'';
+      const ms=(f.meanings||[]).map(clean).filter(Boolean),good=ms.filter(m=>!JUNK.test(m));
+      const cap=/^[A-Z]/.test(raw);
+      const last=normPy(raw).split(' ').pop(),neutral=/5$|[a-z]$/.test(last);
+      return{py:normPy(raw).toLowerCase(),ms:good.length?good:ms,minor:!good.length||cap,score:good.length+(particle&&neutral?.5:0),i};
+    }).filter(f=>f.py);
+    if(!forms.length)return null;
+    const major=forms.filter(f=>!f.minor);if(major.length)forms=major;
+    forms.sort((a,b)=>b.score-a.score||a.i-b.i);
+    const seen=new Set(),use=[];
+    for(const f of forms){if(seen.has(f.py))continue;seen.add(f.py);use.push(f);}
+    const multi=use.length>1;
+    let parts=[];
+    for(const f of use.slice(0,3)){
+      let t=f.ms.slice(0,2).join('; ');
+      if(!t)continue;
+      parts.push(multi?`(${markPy(f.py)}) ${t}`:t);
+    }
+    let mean=parts.join(' · ');
+    if(mean.length>150)mean=mean.slice(0,150).replace(/[;·(\s]+[^;·]*$/,'')||mean.slice(0,150);
+    return hz+'|'+use.map(f=>f.py).join('/')+'|'+mean;
+  }
+  function levelFromName(name){const m=/(\d+)(?:\.min)?\.json$/i.exec(name||'');return m?+m[1]:0;}
+  function levelsFromTags(e){
+    const t=(e.level||[]).map(String).filter(s=>/^new-\d+$/.test(s)).map(s=>+s.slice(4));
+    return t.length?Math.min(...t):0;
+  }
+  /* returns {level:[entries]} or null if the level cannot be worked out */
+  function group(arr,name){
+    if(!Array.isArray(arr))return null;
+    const lv=levelFromName(name);
+    if(lv)return{[lv]:arr};
+    const out={};let ok=false;
+    for(const e of arr){const l=levelsFromTags(e);if(l){(out[l]=out[l]||[]).push(e);ok=true;}}
+    return ok?out:null;
+  }
+  const toText=entries=>entries.map(toLine).filter(Boolean).join('\n');
+  return{group,toText,toLine,markPy};
+})();
+
+
+const BUILTIN_LISTS={"1":"爱|ai4|to love; to be fond of; to like; affection\n八|ba1|eight; 8\n爸爸|ba4 ba5|(coll.) father; dad\n吧|ba5/ba1|(ba) (modal particle indicating suggestion or surmise); ...right? · (bā) bar (loanword) (serving drinks, or providing Internet access etc)\n白天|bai2 tian1|daytime; during the day\n百|bai3|hundred; numerous\n半|ban4|half; semi-\n包子|bao1 zi5|bao (steamed stuffed bun)\n杯子|bei1 zi5|cup; glass\n本|ben3|root; stem\n边|bian1/bian5|(biān) side; edge · (bian) suffix of a noun of locality\n便宜|pian2 yi5/bian4 yi2|(pián yi) cheap; inexpensive · (biàn yí) convenient\n病|bing4|illness; disease\n不|bu4|no; not so; (bound form) not; un-\n不客气|bu4 ke4 qi5|you're welcome; don't mention it\n不要|bu4 yao4|don't!; must not\n菜|cai4|dish (type of food); vegetable\n茶|cha2|tea; tea plant\n唱|chang4|to sing; to call loudly\n超市|chao1 shi4|supermarket (abbr. for 超级市场)\n车|che1/ju1|(chē) car; vehicle · (jū) rook (in Chinese chess); rook (in chess)\n吃|chi1|to eat; to consume; to eat at (a cafeteria etc)\n出租车|chu1 zu1 che1|taxi\n穿|chuan1|to wear; to put on\n打电话|da3 dian4 hua4|to make a telephone call\n大|da4|big; large; great; older (than another person)\n大家|da4 jia1|everyone; influential family\n大学|da4 xue2|university; college\n大学生|da4 xue2 sheng1|university student; college student\n到|dao4|to reach; to arrive; to leave for; to go to\n的|de5/di2/di4|(de) of; ~'s (possessive particle); (used after an attribute) · (dí) really and truly · (dì) (bound form) bull's-eye; target\n弟弟|di4 di5|younger brother\n第|di4|(prefix indicating ordinal number, as in 六 \"sixth\"); (literary) grades in which successful candidates in the imperial examinations were placed\n点|dian3|point; dot\n电话|dian4 hua4|telephone; phone call\n电脑|dian4 nao3|computer\n电视|dian4 shi4|television; TV\n电影|dian4 ying3|movie; film\n电影院|dian4 ying3 yuan4|cinema; movie theater\n店|dian4|inn; old-style hotel; (bound form) shop; store\n东西|dong1 xi5/dong1 xi1|(dōng xi) thing; stuff · (dōng xī) east and west\n都|dou1/du1|(dōu) all; both; entirely; (used for emphasis) even · (dū) capital city; metropolis\n读|du2/dou4|(dú) to read out; to read aloud; to read · (dòu) comma; phrase marked by pause\n读书|du2 shu1|to read a book; to study\n对|dui4|right; correct; towards; at; for\n对不起|dui4 bu5 qi3|I'm sorry; excuse me; I beg your pardon; to let (sb) down; to disappoint\n多|duo1|many; much; too many; in excess\n多少|duo1 shao3/duo1 shao5|(duō shǎo) number; amount · (duō shao) how much?; how many?\n儿子|er2 zi5|son\n二|er4|two; 2\n饭|fan4|cooked rice; meal\n饭店|fan4 dian4|restaurant; hotel\n房间|fang2 jian1|room\n飞机|fei1 ji1|airplane\n非常|fei1 chang2|very; really; unusual; extraordinary\n分|fen1/fen4|(fēn) to divide; to separate; to distribute; to allocate · (fèn) part; share\n分钟|fen1 zhong1|minute\n高兴|gao1 xing4|happy; glad\n哥哥|ge1 ge5|older brother\n歌|ge1|song; to sing\n个|ge4/ge3|(gè) (classifier used before a noun that has no specific classifier); (bound form) individual · (gě) used in 自个儿\n给|gei3/ji3|(gěi) to; for · (jǐ) to supply; to provide\n工作|gong1 zuo4|to work; (of a machine) to operate\n公司|gong1 si1|company; firm; corporation\n狗|gou3|dog\n贵|gui4|expensive; noble\n国|guo2|country; nation; state; (bound form) national\n还|hai2/huan2|(hái) still; still in progress · (huán) to pay back; to return\n孩子|hai2 zi5|child\n汉语|han4 yu3|Chinese language\n汉字|han4 zi4|Chinese character; Japanese: kanji\n好|hao3/hao4|(hǎo) good; appropriate; proper · (hào) to be fond of; to have a tendency to; to be prone to\n好吃|hao3 chi1/hao4 chi1|(hǎo chī) tasty; delicious · (hào chī) to be fond of eating; to be gluttonous\n好看|hao3 kan4|good-looking; nice-looking\n好听|hao3 ting1|pleasant to hear\n好玩儿|hao3 wan2 r5|amusing; fun\n号|hao4/hao2|(hào) ordinal number; day of a month · (háo) roar; cry\n喝|he1/he4|(hē) to drink · (hè) to shout\n和|he2/huo4/he4/hu2/huo2|(hé) (math.) sum; to make peace · (huò) to mix (ingredients) together; to blend\n很|hen3|(adverb of degree); quite\n后|hou4|back; behind\n回|hui2|to circle; to go back\n会|hui4/kuai4|(huì) can; to have the skill; to know how to; to be likely to; to be sure to · (kuài) to balance an account; accounting\n火车|huo3 che1|train\n鸡蛋|ji1 dan4|(chicken) egg; hen's egg\n几|ji3/ji1|(jǐ) how much; how many · (jī) small table\n家|jia1|home; family\n家人|jia1 ren2|family member; (old) servant\n见|jian4/xian4|(jiàn) to see; to meet · (xiàn) to appear; also written 现\n件|jian4|item; component\n饺子|jiao3 zi5|dumpling; pot-sticker\n叫|jiao4|to shout; to call\n姐姐|jie3 jie5|older sister\n今年|jin1 nian2|this year\n今天|jin1 tian1|today; at the present\n九|jiu3|nine; 9\n觉得|jue2 de5|to think that ...; to feel that ...; to feel (uncomfortable etc)\n开|kai1|to open (transitive or intransitive); (of ships, vehicles, troops etc) to start\n开车|kai1 che1|to drive a car\n看|kan4/kan1|(kàn) to see; to look at; to read · (kān) to look after; to take care of\n看病|kan4 bing4|to visit a doctor; to see a patient\n看见|kan4 jian4|to see; to catch sight of\n可以|ke3 yi3|can; may\n课|ke4|subject; course\n口|kou3|mouth; classifier for things with mouths (people, domestic animals, cannons, wells etc)\n块|kuai4|lump; chunk; piece; classifier for pieces of cloth, cake, soap etc\n来|lai2|to come; (used as a substitute for a more specific verb)\n老师|lao3 shi1|teacher\n了|le5/liao3|(le) (completed action marker); (modal particle indicating change of state, situation now) · (liǎo) to finish; to achieve\n冷|leng3|cold\n里|li3|lining; interior\n两|liang3|two; both\n零|ling2|zero; nought\n六|liu4|six; 6\n妈妈|ma1 ma5|mama; mommy\n吗|ma5/ma2/ma3|(ma) (question particle for \"yes-no\" questions) · (má) (coll.) what? · (mǎ) used in 吗啡\n买|mai3|to buy; to purchase\n卖|mai4|to sell; to betray\n忙|mang2|busy; hurriedly\n猫|mao1|cat; (coll.) modem\n没关系|mei2 guan1 xi5|it doesn't matter\n没有|mei2 you3|haven't; hasn't\n妹妹|mei4 mei5|younger sister; young woman\n们|men5|plural marker for pronouns, and nouns referring to individuals\n米饭|mi3 fan4|(cooked) rice\n面包|mian4 bao1|bread\n面条儿|mian4 tiao2 r5|noodles\n名字|ming2 zi5|name (of a person or thing)\n明年|ming2 nian2|next year\n明天|ming2 tian1|tomorrow\n哪|na3/na5/ne2/nei3|(nǎ) how; which · (na) (emphatic sentence-final particle, used instead of 啊 after a word ending in \"n\") · (né) used in 吒\n哪儿|na3 r5|where?; wherever; anywhere; somewhere\n哪里|na3 li3|where?; somewhere\n哪些|na3 xie1|which ones?; who?\n那|na4/nuo2|(nà) (specifier) that; the; those (colloquial pr. [nèi]); (pronoun) that (referring to persons, things or situations) · (nuó) beautiful; how\n那边|na4 bian5|over there; yonder\n那儿|na4 r5|there\n那里|na4 li5|there; that place\n那些|na4 xie1|those\n男|nan2|male; Baron, lowest of five orders of nobility 位\n男朋友|nan2 peng2 you5|boyfriend\n呢|ne5/ni2|(ne) particle indicating that a previously asked question is to be applied to the preceding word (\"What about ...?\", \"And ...?\")\n能|neng2|can; to be able to\n你|ni3|you (informal, as opposed to courteous 您)\n你们|ni3 men5|you (plural)\n年|nian2|grain; harvest (old)\n您|nin2|you (courteous, as opposed to informal 你)\n牛奶|niu2 nai3|cow's milk\n女|nv3|female; woman\n女儿|nv3 er2|daughter\n女朋友|nv3 peng2 you5|girlfriend\n女士|nv3 shi4|lady; madam\n朋友|peng2 you5|friend\n漂亮|piao4 liang5|pretty; beautiful\n苹果|ping2 guo3|apple\n七|qi1|seven; 7\n起床|qi3 chuang2|to get out of bed; to get up\n千|qian1|thousand\n前|qian2|front; forward\n钱|qian2|coin; money\n请|qing3|to ask; to invite\n请问|qing3 wen4|Excuse me, may I ask...?\n去|qu4|to go; to go to (a place)\n去年|qu4 nian2|last year\n热|re4|to warm up; to heat up\n人|ren2|person; people\n认识|ren4 shi5|to know; to recognize\n日|ri4|sun; day\n三|san1|three; 3\n商店|shang1 dian4|store; shop\n上|shang4/shang3|(shàng) (bound form) up; upper; above; previous; first (of multiple parts) · (shǎng) used in 上声\n上班|shang4 ban1|to go to work; to be on duty\n上课|shang4 ke4|to go to class; to attend class\n上午|shang4 wu3|morning\n上学|shang4 xue2|to go to school; to attend school\n少|shao3/shao4|(shǎo) few; less · (shào) young\n什么|shen2 me5|what?; something\n生病|sheng1 bing4|to fall ill\n十|shi2|ten; 10\n时候|shi2 hou5|time; length of time\n时间|shi2 jian1|time; period\n事|shi4|matter; thing\n是|shi4|to be (followed by substantives only); correct; right; true\n手机|shou3 ji1|cell phone; mobile phone\n书|shu1|book; letter\n书店|shu1 dian4|bookstore\n谁|shei2|who\n水|shui3|water; river\n水果|shui3 guo3|fruit\n睡|shui4|to sleep; to lie down\n睡觉|shui4 jiao4|to go to bed; to sleep\n说|shuo1/shui4|(shuō) to speak; to talk; to say; to explain; to comment · (shuì) to persuade\n说话|shuo1 hua4|to speak; to say\n四|si4|four; 4\n岁|sui4|classifier for years (of age); year\n他|ta1|he; him (used for either sex when the sex is unknown or unimportant); (used before sb's name for emphasis)\n他们|ta1 men5|they\n它|ta1|it\n它们|ta1 men5|they (for inanimate objects)\n她|ta1|she\n她们|ta1 men5|they; them (for females)\n太|tai4|highest; greatest\n天|tian1|day; sky\n天气|tian1 qi4|weather\n听|ting1|to listen to; to hear; to heed; to obey\n听见|ting1 jian4|to hear\n同学|tong2 xue2|to study at the same school; fellow student\n外|wai4|outside; in addition\n外边|wai4 bian5|outside; outer surface\n玩|wan2|to play; to have fun\n晚|wan3|evening; night\n晚饭|wan3 fan4|evening meal; dinner\n晚上|wan3 shang5|evening; night\n喂|wei4/wei2|(wèi) hey; to feed (an animal, baby, invalid etc) · (wéi) hello (when answering the phone)\n问|wen4|to ask; to inquire\n问题|wen4 ti2|question; problem\n我|wo3|I; me; my\n我们|wo3 men5|we; us\n五|wu3|five; 5\n午饭|wu3 fan4|lunch\n喜欢|xi3 huan5|to like; to be fond of\n下|xia4|down; downwards\n下班|xia4 ban1|to finish work; to get off work\n下课|xia4 ke4|to finish class; to get out of class\n下午|xia4 wu3|afternoon; p.m.\n下雨|xia4 yu3|to rain\n先生|xian1 sheng5|teacher; gentleman; sir; mister (Mr.)\n现在|xian4 zai4|now; at present\n想|xiang3|to think (about); to think of; to devise\n小|xiao3|small; tiny\n小朋友|xiao3 peng2 you3|child\n小时|xiao3 shi2|hour\n小学|xiao3 xue2|elementary school; primary school\n小学生|xiao3 xue2 sheng1|primary school student; schoolchild\n些|xie1|classifier indicating a small amount or small number greater than 1: some, a few, several\n写|xie3|to write\n谢谢|xie4 xie5|to thank; thanks\n新|xin1|new; newly\n星期|xing1 qi1|week; day of the week\n星期日|xing1 qi1 ri4|Sunday\n星期天|xing1 qi1 tian1|Sunday\n休息|xiu1 xi5|rest; to rest\n学|xue2|to learn; to study\n学生|xue2 sheng5|student; schoolchild\n学习|xue2 xi2|to learn; to study\n学校|xue2 xiao4|school\n雪|xue3|snow; (literary) to wipe away (a humiliation etc)\n要|yao4/yao1|(yào) to want; to need; to ask for; will; shall; about to · (yāo) (bound form) to demand; to coerce\n也|ye3|(adverb) also; both ... and ... (before predicates only); (literary) particle having functions similar to 啊\n一|yi1|one; single\n一半|yi1 ban4|half\n一点儿|yi1 dian3 r5|a bit; a little bit; (used in negative expressions) (not) the least bit\n一些|yi1 xie1|some; a few\n衣服|yi1 fu5|clothes\n医生|yi1 sheng1|doctor\n医院|yi1 yuan4|hospital\n椅子|yi3 zi5|chair\n有|you3|to have; there is; (bound form) having; with; -ful; -ed; -al (as in 意 intentional)\n有的|you3 de5|(there are) some (who are...); some (exist)\n有点儿|you3 dian3 r5|slightly; a little\n有些|you3 xie1|some; somewhat\n雨|yu4/yu3|(yù) (literary) to rain; (of rain, snow etc) to fall · (yǔ) rain\n元|yuan2|currency unit (esp. Chinese yuan); first\n月|yue4|moon; month\n再|zai4|again; once more; re-; second; another\n再见|zai4 jian4|goodbye\n在|zai4|to exist; to be alive; (of sb or sth) to be (located) at\n早|zao3|early; morning\n早饭|zao3 fan4|breakfast\n早上|zao3 shang5|early morning\n怎么|zen3 me5|how?; what?\n怎么样|zen3 me5 yang4|how?; how about?\n找|zhao3|to try to find; to look for\n这|zhe4|(pronoun) this; these; (bound form) this; the (followed by a noun)\n这边|zhe4 bian1|this side; here\n这儿|zhe4 r5|here\n这里|zhe4 li3|here\n这些|zhe4 xie1|these\n真|zhen1|really; truly\n正在|zheng4 zai4|just at (that time); right in (that place)\n知道|zhi1 dao4|to know; to become aware of\n只|zhi3/zhi1|(zhǐ) only; merely · (zhī) grain that has begun to ripen\n中国|zhong1 guo2|China\n中文|zhong1 wen2|Chinese language\n中午|zhong1 wu3|noon; midday\n中学|zhong1 xue2|middle school\n中学生|zhong1 xue2 sheng1|middle-school student; high school student\n住|zhu4|to live; to dwell\n桌子|zhuo1 zi5|table; desk\n字|zi4|letter; symbol\n昨天|zuo2 tian1|yesterday\n坐|zuo4|to sit; to take a seat\n做|zuo4|to make; to produce; to write; to compose\n做饭|zuo4 fan4|to prepare a meal; to cook"};
+const CHARS_RAW=`# hanzi|pinyin readings|meaning   (characters that never appear as a standalone word in the lists)
+爸|ba4|father
+杯|bei1|cup
+子|zi3/zi5|child; son; (noun suffix)
+北|bei3|north
+京|jing1|capital
+客|ke4|guest
+气|qi4|air; gas; anger
+租|zu1|to rent
+车|che1|vehicle; car
+打|da3|to hit; to play
+电|dian4|electricity
+话|hua4|speech; words
+脑|nao3|brain
+视|shi4|to look at
+影|ying3|shadow; image
+起|qi3|to rise; to get up
+儿|er2/er5|child; (diminutive suffix)
+饭|fan4|cooked rice; meal
+店|dian4|shop
+飞|fei1|to fly
+机|ji1|machine; opportunity
+钟|zhong1|clock; bell
+兴|xing4/xing1|interest; (xīng) to flourish
+工|gong1|work
+作|zuo4|to do; to make; to write
+汉|han4|Han (Chinese)
+语|yu3|language
+后|hou4|after; behind
+面|mian4|face; surface; noodles
+火|huo3|fire
+今|jin1|today; now
+天|tian1|sky; day
+见|jian4|to see
+师|shi1|teacher; master
+妈|ma1|mom
+没|mei2/mo4|not have; (mò) to sink
+系|xi4/ji4|system; to tie; (jì) to fasten
+名|ming2|name
+明|ming2|bright
+朋|peng2|friend
+友|you3|friend
+漂|piao4/piao1|pretty; (piāo) to float
+亮|liang4|bright
+苹|ping2|(apple)
+果|guo3|fruit; result
+前|qian2|front; before
+认|ren4|to recognize
+识|shi2/shi4|to know; (zhì) to remember
+商|shang1|commerce; to discuss
+午|wu3|noon
+什|shen2/shi2|what (in 什么); ten
+么|me5/ma5|(suffix in 什么, 怎么)
+时|shi2|time; hour
+候|hou4|to wait; season; time
+睡|shui4|to sleep
+觉|jue2/jiao4|to feel; (jiào) a sleep
+同|tong2|same; together
+学|xue2|to study; learning
+们|men5|(plural marker for people)
+喜|xi3|joyful; to like
+欢|huan1|joyful
+雨|yu3|rain
+生|sheng1|to be born; life; raw
+现|xian4|now; to appear
+姐|jie3|elder sister
+谢|xie4|to thank
+星|xing1|star
+期|qi1|period; to expect
+习|xi2|to practise
+校|xiao4|school
+衣|yi1|clothes
+服|fu2|clothes; to serve; to take (medicine)
+医|yi1|medicine; doctor
+院|yuan4|courtyard; institution
+椅|yi3|chair
+怎|zen3|how
+样|yang4|appearance; kind
+中|zhong1/zhong4|middle; (zhòng) to hit
+国|guo2|country
+桌|zhuo1|table
+昨|zuo2|yesterday
+帮|bang1|to help
+助|zhu4|to help
+报|bao4|to report; newspaper
+纸|zhi3|paper
+唱|chang4|to sing
+歌|ge1|song
+篮|lan2|basket
+球|qiu2|ball
+弟|di4|younger brother
+第|di4|(ordinal prefix)
+房|fang2|house; room
+间|jian1/jian4|between; room; (jiàn) gap
+非|fei1|not; wrong
+常|chang2|often; usual
+务|wu4|affairs; business
+员|yuan2|member; staff
+告|gao4|to tell
+诉|su4|to tell; to complain
+哥|ge1|elder brother
+公|gong1|public; fair; male
+共|gong4|together; total
+汽|qi4|steam; vapour
+司|si1|to take charge of; department
+孩|hai2|child
+场|chang3|place; field
+鸡|ji1|chicken
+蛋|dan4|egg
+室|shi4|room
+介|jie4|to be between; to introduce
+绍|shao4|to continue; to introduce
+咖|ka1|(in 咖啡)
+啡|fei1|(in 咖啡)
+始|shi3|to begin
+考|kao3|to test; to examine
+可|ke3|can; may; but
+以|yi3|with; by means of
+乐|le4/yue4|happy; (yuè) music
+旅|lv3|to travel
+游|you2|to swim; to travel
+妹|mei4|younger sister
+牛|niu2|cow; ox
+奶|nai3|milk; breast
+旁|pang2|side
+边|bian1/bian5|side; edge
+跑|pao3|to run
+步|bu4|step; to walk
+便|bian4/pian2|convenient; (pián) cheap
+宜|yi2|suitable
+妻|qi1|wife
+床|chuang2|bed
+铅|qian1|lead (metal)
+笔|bi3|pen; brush
+身|shen1|body
+体|ti3|body
+病|bing4|illness
+事|shi4|matter; affair
+情|qing2|feeling; situation
+手|shou3|hand
+表|biao3|to show; watch; table
+虽|sui1|although
+然|ran2|so; like that
+但|dan4|but
+踢|ti1|to kick
+足|zu2|foot; sufficient
+跳|tiao4|to jump
+舞|wu3|dance
+晚|wan3|evening; late
+瓜|gua1|melon
+希|xi1|to hope
+望|wang4|to hope; to gaze
+休|xiu1|to rest
+息|xi2|breath; rest; news
+颜|yan2|colour; face
+色|se4/shai3|colour
+眼|yan3|eye
+睛|jing1|eyeball
+羊|yang2|sheep
+肉|rou4|meat
+已|yi3|already
+经|jing1|to pass through; scripture
+意|yi4|meaning; idea
+思|si1|to think
+因|yin1|cause; reason
+泳|yong3|to swim
+右|you4|right
+运|yun4|to move; to transport
+动|dong4|to move
+早|zao3|early; morning
+丈|zhang4|(unit of length; in 丈夫)
+夫|fu1|husband; man
+正|zheng4|straight; correct; just
+知|zhi1|to know
+道|dao4|way; road; to say
+准|zhun3|accurate; to allow
+备|bei4|to prepare
+左|zuo3|left
+阿|a1|(prefix); flatter
+姨|yi2|maternal aunt
+安|an1|peaceful; safe
+静|jing4|quiet
+办|ban4|to handle; to do
+法|fa3|law; method
+方|fang1|square; direction; method
+鼻|bi2|nose
+较|jiao4|to compare; comparatively
+赛|sai4|to compete; match
+记|ji4|to remember; to record
+必|bi4|must
+须|xu1|must; to need
+变|bian4|to change
+化|hua4|to change; -ize
+冰|bing1|ice
+箱|xiang1|box; chest
+而|er2|and; but
+且|qie3|moreover; and
+单|dan1|single; list
+参|can1|to take part in
+加|jia1|to add
+超|chao1|to exceed; super
+市|shi4|city; market
+衬|chen4|lining
+衫|shan1|shirt
+成|cheng2|to become; to succeed
+绩|ji4|achievement
+城|cheng2|city; wall
+迟|chi2|late
+除|chu2|to remove; to divide
+词|ci2|word
+典|dian3|standard; code
+聪|cong1|clever
+扫|sao3/sao4|to sweep
+算|suan4|to calculate; to count
+担|dan1|to carry; to bear
+心|xin1|heart; mind
+糕|gao1|cake
+当|dang1/dang4|to serve as; when; (dàng) proper
+铁|tie3|iron
+图|tu2|picture; chart
+梯|ti1|ladder; stairs
+邮|you2|post; mail
+物|wu4|thing; object
+锻|duan4|to forge
+炼|lian4|to refine; to smelt
+耳|er3|ear
+朵|duo3|flower; (measure word)
+烧|shao1|to burn; to cook
+复|fu4|to repeat; to return
+干|gan1/gan4|dry; (gàn) to do
+净|jing4|clean
+感|gan3|to feel
+冒|mao4|to emit; to risk
+刚|gang1|just; hard
+才|cai2|only then; talent
+根|gen1|root
+据|ju4|to occupy; according to
+斤|jin1|half a kilogram
+园|yuan2|garden; park
+故|gu4|reason; former
+刮|gua1|to scrape; to blow
+风|feng1|wind
+于|yu2|at; in; to; from
+汁|zhi1|juice
+害|hai4|to harm
+怕|pa4|to fear
+板|ban3|board; plank
+护|hu4|to protect
+照|zhao4|to shine; to take (a photo)
+迎|ying2|to welcome
+环|huan2|ring; surroundings
+境|jing4|border; environment
+黄|huang2|yellow
+河|he2|river
+答|da2|to answer
+议|yi4|to discuss
+或|huo4|or; maybe
+者|zhe3|-er (one who)
+乎|hu1|(literary particle)
+季|ji4|season
+节|jie2|festival; joint; section
+检|jian3|to inspect
+查|cha2|to check
+简|jian3|simple
+健|jian4|healthy
+康|kang1|healthy
+街|jie1|street
+目|mu4|eye; item
+结|jie2/jie1|to tie; to end; (jiē) to bear fruit
+婚|hun1|marriage
+束|shu4|to bind; bundle
+解|jie3|to untie; to solve
+决|jue2|to decide
+理|li3|reason; principle; to manage
+句|ju4|sentence
+定|ding4|to settle; to fix; certain
+空|kong1/kong4|empty; sky; (kòng) free time
+调|tiao2/diao4|to adjust; (diào) to transfer
+裤|ku4|trousers
+筷|kuai4|chopsticks
+礼|li3|ceremony; gift
+历|li4|to experience; calendar
+史|shi3|history
+练|lian4|to practise
+聊|liao2|to chat
+邻|lin2|neighbour
+居|ju1|to live; to reside
+满|man3|full; satisfied
+帽|mao4|hat
+级|ji2|level; grade
+轻|qing1|light; gentle
+努|nu3|to strive
+力|li4|strength; force
+爬|pa2|to climb; to crawl
+山|shan1|mountain
+盘|pan2|plate; tray
+皮|pi2|skin; leather
+鞋|xie2|shoe
+啤|pi2|(in 啤酒, beer)
+酒|jiu3|alcohol; liquor
+瓶|ping2|bottle
+其|qi2|his; her; its; that
+实|shi2|real; solid
+奇|qi2|strange
+怪|guai4|strange; to blame
+清|qing1|clear
+楚|chu3|clear; (state of) Chu
+假|jia4/jia3|holiday; (jiǎ) fake
+裙|qun2|skirt
+容|rong2|to contain; appearance
+易|yi4|easy; to change
+如|ru2|as; like; if
+网|wang3|net
+声|sheng1|sound
+音|yin1|sound
+世|shi4|world; generation
+界|jie4|boundary; world
+叔|shu1|uncle (father's younger brother)
+舒|shu1|to stretch; comfortable
+数|shu4/shu3|number; (shǔ) to count
+刷|shua1|to brush
+牙|ya2|tooth
+平|ping2|flat; peaceful
+阳|yang2|sun; yang
+特|te4|special
+提|ti2|to lift; to raise; to mention
+育|yu4|to raise; to educate
+填|tian2|to fill in
+头|tou2|head
+突|tu1|sudden
+馆|guan3|building; hall
+忘|wang4|to forget
+文|wen2|writing; culture
+惯|guan4|used to
+澡|zao3|bath
+相|xiang1/xiang4|mutually; (xiàng) appearance
+香|xiang1|fragrant
+蕉|jiao1|plantain; banana
+闻|wen2|to smell; to hear
+鲜|xian1|fresh
+行|xing2/hang2|to walk; OK; (háng) row; profession
+李|li3|plum; surname Li
+熊|xiong2|bear
+需|xu1|to need
+选|xuan3|to choose
+择|ze2|to select
+求|qiu2|to request; to seek
+爷|ye2|grandpa
+般|ban1|kind; sort
+直|zhi2|straight; directly
+艺|yi4|art; skill
+术|shu4|art; technique
+银|yin2|silver
+应|ying1/ying4|should; (yìng) to answer
+该|gai1|should; ought to
+响|xiang3|to make a sound
+优|you1|excellent
+秀|xiu4|beautiful; elegant
+戏|xi4|play; drama
+遇|yu4|to meet
+愿|yuan4|to wish
+急|ji2|anxious; urgent
+顾|gu4|to look after
+片|pian4/pian1|slice; flake
+终|zhong1|end; finally
+重|zhong4/chong2|heavy; important; (chóng) to repeat
+周|zhou1|week; cycle
+末|mo4|end
+主|zhu3|owner; main
+注|zhu4|to pour; to note
+自|zi4|self; from
+己|ji3|self
+总|zong3|always; total
+业|ye4|business; industry`;
+
+(function(){
+'use strict';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+
+/* ---------- pinyin helpers ---------- */
+const MARKS={a:'āáǎà',e:'ēéěè',i:'īíǐì',o:'ōóǒò',u:'ūúǔù','ü':'ǖǘǚǜ'};
+const UNMARK={};
+for(const b in MARKS)[...MARKS[b]].forEach((c,i)=>{UNMARK[c]=[b,i+1];});
+function sylMark(s){
+  const m=/^([a-zv]+?)([0-5])?$/.exec(s);
+  if(!m)return s;
+  const base=m[1].replace(/v/g,'ü'),t=m[2]?+m[2]:5;
+  if(!t||t===5)return base;
+  let i=base.search(/[ae]/);
+  if(i<0&&base.includes('ou'))i=base.indexOf('o');
+  if(i<0)for(let k=base.length-1;k>=0;k--)if('iouü'.includes(base[k])){i=k;break;}
+  if(i<0)return base;
+  return base.slice(0,i)+MARKS[base[i]][t-1]+base.slice(i+1);
+}
+const toneOf=s=>{const m=/([1-5])$/.exec(s);return m?+m[1]:5;};
+const pyHTML=p=>p.trim().split(/\s+/).map(s=>`<span class="t${toneOf(s)}">${sylMark(s)}</span>`).join(' ');
+function parseUser(s){
+  s=s.toLowerCase().replace(/u:/g,'ü').replace(/v/g,'ü');
+  let base='';const tones=[];
+  for(const ch of s){
+    if(UNMARK[ch]){base+=UNMARK[ch][0];tones.push(UNMARK[ch][1]);}
+    else if(ch>='0'&&ch<='5')tones.push(ch==='0'?5:+ch);
+    else if(/[a-zü]/.test(ch))base+=ch;
+  }
+  return{base,tones};
+}
+/* expected tones are arrays of acceptable values (bù/yī sandhi is forgiven) */
+function parseExpected(p){
+  let base='';const tones=[];
+  for(const s of p.trim().split(/\s+/)){
+    const m=/^([a-zv]+?)([0-5])?$/.exec(s);if(!m)continue;
+    const b=m[1].replace(/v/g,'ü'),t=m[2]&&+m[2]?+m[2]:5;
+    base+=b;
+    tones.push(b==='bu'&&t===4?[4,2]:b==='yi'&&t===1?[1,2,4]:[t]);
+  }
+  return{base,tones};
+}
+function tonesMatch(E,U){
+  if(U.length===E.length)return E.every((a,i)=>a[0]===5||a.includes(U[i]));
+  const idx=[];E.forEach((a,i)=>{if(a[0]!==5)idx.push(i);});
+  return U.length===idx.length&&idx.every((k,j)=>E[k].includes(U[j]));
+}
+function gradePinyin(input,readings){
+  const u=parseUser(input);let tone=false;
+  for(const r of readings){
+    const e=parseExpected(r);
+    if(u.base!==e.base)continue;
+    if(tonesMatch(e.tones,u.tones))return'ok';
+    tone=true;
+  }
+  return tone?'tone':'bad';
+}
+function toneVars(p){
+  const syl=p.trim().split(/\s+/),out=[];
+  syl.forEach((s,i)=>{
+    const m=/^([a-zv]+?)([0-5])?$/.exec(s);if(!m)return;
+    const cur=m[2]&&+m[2]?+m[2]:5;
+    [1,2,3,4].forEach(t=>{if(t!==cur){const a=syl.slice();a[i]=m[1]+t;out.push(a.join(' '));}});
+  });
+  return out;
+}
+/* tone-marked or numeric pinyin -> numeric (used when importing lists) */
+function toNum(p){
+  return p.trim().replace(/['’]/g,' ').split(/\s+/).filter(Boolean).map(s=>{
+    s=s.toLowerCase();
+    if(/[0-5]$/.test(s))return s.replace(/ü|u:/g,'v');
+    let t=0,o='';
+    for(const ch of s){if(UNMARK[ch]){o+=UNMARK[ch][0];t=UNMARK[ch][1];}else o+=ch;}
+    return o.replace(/ü|u:/g,'v')+(t?t:'');
+  }).join(' ');
+}
+
+/* ---------- storage keys ---------- */
+const KEY='hanzi-drill-v1',LKEY='hanzi-drill-lists';
+let USER={};try{USER=JSON.parse(localStorage.getItem(LKEY)||'{}')||{};}catch(e){}
+
+/* ---------- data ---------- */
+/* text import: hanzi | pinyin | meaning | level  (tab/comma also ok) */
+function parseWordText(txt){
+  const out=[];let bad=0;
+  txt.split(/\r?\n/).forEach(line=>{
+    line=line.trim();if(!line||line[0]==='#')return;
+    const f=line.includes('|')?line.split('|'):line.includes('\t')?line.split('\t'):line.split(',');
+    const lv=/(\d)\s*$/.exec((f[3]||'').trim());
+    const hz=(f[0]||'').trim(),py=toNum(f[1]||'');
+    if(!hz||!py||!lv||!(+lv[1]>=1)){bad++;return;}
+    out.push({hz,py,mean:(f[2]||'').trim().replace(/\|/g,'/'),level:+lv[1]});
+  });
+  return{rows:out,bad};
+}
+const LISTS={...BUILTIN_LISTS,...USER};
+const WMAP=new Map();   // hz -> {hz,py:[...],mean,level}
+Object.keys(LISTS).map(Number).sort((a,b)=>a-b).forEach(lv=>{
+  String(LISTS[lv]).split('\n').forEach(line=>{
+    const f=line.split('|');if(f.length<2||!f[0])return;
+    const o=WMAP.get(f[0]);if(o&&o.level<lv)return;       // lowest level wins
+    WMAP.set(f[0],{hz:f[0],py:f[1].split('/'),mean:f[2]||'',level:lv});
+  });
+});
+const ALLW=[...WMAP.values()];
+ALLW.forEach((w,i)=>w.ord=i);
+ALLW.sort((a,b)=>a.level-b.level||a.ord-b.ord);
+const SUPP=new Map();
+CHARS_RAW.split('\n').forEach(l=>{l=l.trim();if(!l||l[0]==='#')return;const f=l.split('|');if(f.length>=3)SUPP.set(f[0],{py:f[1].split('/'),mean:f[2]});});
+
+/* character levels & aligned readings from the words */
+const CL=new Map(),ALIGN=new Map(),FIRSTW=new Map(),ORD=[];
+ALLW.forEach(w=>{
+  const ch=[...w.hz];
+  ch.forEach((c,i)=>{
+    if(!CL.has(c)){CL.set(c,w.level);ORD.push(c);}else CL.set(c,Math.min(CL.get(c),w.level));
+    if(ch.length>1){if(!FIRSTW.has(c))FIRSTW.set(c,w);}
+    if(ch.length>1)w.py.forEach(rd=>{const syl=rd.trim().split(/\s+/);if(syl.length!==ch.length)return;const a=ALIGN.get(c)||[];if(!a.includes(syl[i]))a.push(syl[i]);ALIGN.set(c,a);});
+  });
+});
+const CH=[],IDX=new Map(),WORDS=[],WIDX=new Map();
+ORD.forEach(c=>{
+  const sw=WMAP.get(c),sp=SUPP.get(c),al=ALIGN.get(c)||[];
+  let py,mean;
+  if(sw){py=sw.py.slice();mean=sw.mean;}
+  else if(sp){py=sp.py.slice();mean=sp.mean;}
+  else{py=[];const fw=FIRSTW.get(c);mean=fw?`in ${fw.hz} (${fw.mean})`:'';}
+  const have=new Set(py.map(p=>p.replace(/\d$/,'')+'|'+toneOf(p)));
+  al.forEach(p=>{
+    const t=toneOf(p),k=p.replace(/\d$/,'')+'|'+t;
+    if(have.has(k))return;
+    if(t===5&&py.length)return;
+    py.push(p);have.add(k);
+  });
+  if(!py.length)py=['?'];
+  const e={hz:c,py,mean,level:CL.get(c),words:[],other:[],ord:CH.length};
+  CH.push(e);IDX.set(c,e);
+});
+ALLW.forEach(w=>{
+  const chars=[...w.hz];if(chars.length<2)return;
+  const mx=Math.max(...chars.map(c=>CL.get(c)));
+  const o={hz:w.hz,py:w.py[0],pys:w.py,gloss:w.mean,level:w.level,chars,maxCL:mx};
+  WIDX.set(w.hz,o);WORDS.push(o);
+  new Set(chars).forEach(c=>{const e=IDX.get(c);(mx<=e.level?e.words:e.other).push(o);});
+});
+const LV=[...new Set(ALLW.map(w=>w.level))].sort((a,b)=>a-b);
+const short=m=>m.split(';').slice(0,2).join(';').trim();
+const ITEMS={
+  c:CH.slice().sort((a,b)=>a.level-b.level||a.ord-b.ord).map(e=>({key:'c:'+e.hz,kind:'c',hz:e.hz,py:e.py,mean:e.mean,level:e.level})),
+  w:WORDS.map(w=>({key:'w:'+w.hz,kind:'w',hz:w.hz,py:w.pys,mean:w.gloss,level:w.level}))
+};
+const ITEM=new Map([...ITEMS.c,...ITEMS.w].map(i=>[i.key,i]));
+const lvName=n=>n>=7?'7–9':String(n);
+const lvTag=n=>`<span class="lv">HSK ${lvName(n)}</span>`;
+
+/* ---------- storage & spaced repetition ---------- */
+const DEF={levels:[LV[0]||1],target:'c',method:'flip',dir:'fwd',newPer:10,colors:true,auto:false};
+let store={v:1,srs:{},log:{},set:{...DEF},t:0},saveOK=true;
+const valid=s=>s&&s.v===1&&s.srs&&typeof s.srs==='object';
+function adopt(s){store={v:1,srs:s.srs||{},log:s.log||{},set:{...DEF,...(s.set||{})},t:s.t||0};}
+try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(valid(s))adopt(s);}catch(e){}
+function save(){
+  store.t=Date.now();
+  try{localStorage.setItem(KEY,JSON.stringify(store));saveOK=true;}catch(e){saveOK=false;}
+  if(fh)scheduleWrite();
+}
+const MIN=6e4,DAY=864e5,STEPS=[5*MIN,DAY,2*DAY,4*DAY,8*DAY,16*DAY,35*DAY,90*DAY];
+function nextState(s,q){
+  let b=s?s.b:0,ms;
+  if(q===0){b=0;ms=STEPS[0];}
+  else if(q===1){b=Math.max(b,1);ms=STEPS[b]*.6;}
+  else if(q===2){b=Math.min(b+1,7);ms=STEPS[b];}
+  else{b=Math.min(b+2,7);ms=STEPS[b];}
+  return{b,ms};
+}
+function grade(key,q){
+  const s=store.srs[key]||{b:0,due:0,r:0,l:0},n=nextState(store.srs[key],q);
+  s.b=n.b;s.due=Date.now()+n.ms;s.r=(s.r||0)+1;if(q===0)s.l=(s.l||0)+1;
+  store.srs[key]=s;
+}
+function fmtDur(ms){
+  const m=ms/MIN;if(m<60)return Math.round(m)+'m';
+  const h=m/60;if(h<24)return Math.round(h)+'h';
+  const d=h/24;if(d<30)return Math.round(d)+'d';
+  return(d/30).toFixed(d<90?1:0).replace(/\.0$/,'')+'mo';
+}
+const dayKey=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+function logAnswer(ok){const k=dayKey(new Date()),l=store.log[k]||(store.log[k]={n:0,c:0});l.n++;if(ok)l.c++;}
+function streak(){const d=new Date();let n=0;if(!(store.log[dayKey(d)]||{}).n)d.setDate(d.getDate()-1);while((store.log[dayKey(d)]||{}).n){n++;d.setDate(d.getDate()-1);}return n;}
+const STAT={new:'new',learn:'learning',rev:'reviewing',known:'known'};
+function status(key){const s=store.srs[key];return!s?'new':s.b>=5?'known':s.b>=3?'rev':'learn';}
+function counts(P){const c={new:0,learn:0,rev:0,known:0,due:0},now=Date.now();for(const it of P){const s=store.srs[it.key];c[status(it.key)]++;if(s&&s.due<=now)c.due++;}return c;}
+const sel=()=>{const l=(store.set.levels||[]).filter(n=>LV.includes(n));return l.length?l:[LV[0]];};
+const pool=()=>{const l=sel();return ITEMS[store.set.target].filter(i=>l.includes(i.level));};
+function buildQueue(cram){
+  const P=pool(),now=Date.now();
+  if(cram)return shuffle(P.map(i=>[i,((store.srs[i.key]||{b:-1}).b)+Math.random()*3]).sort((a,b)=>a[1]-b[1]).slice(0,20).map(x=>x[0]));
+  const due=[],fresh=[];
+  for(const i of P){const s=store.srs[i.key];if(!s)fresh.push(i);else if(s.due<=now)due.push(i);}
+  due.sort((a,b)=>store.srs[a.key].due-store.srs[b.key].due);
+  return shuffle(due.slice(0,30).concat(fresh.slice(0,store.set.newPer)));
+}
+
+/* ---------- progress file (File System Access API, where supported) ---------- */
+const FSA=!!(window.showSaveFilePicker&&window.showOpenFilePicker);
+let fh=null,fstat=FSA?'none':'nosupport',fname='',fwhen=0,wtimer=0,wq=Promise.resolve(),setOpen=false;
+const FTYPES=[{description:'Hanzi Drill progress',accept:{'application/json':['.json']}}];
+function idb(mode,fn){return new Promise((res,rej)=>{
+  const r=indexedDB.open('hanzi-drill',1);
+  r.onupgradeneeded=()=>r.result.createObjectStore('kv');
+  r.onerror=()=>rej(r.error);
+  r.onsuccess=()=>{try{const tx=r.result.transaction('kv',mode),q=fn(tx.objectStore('kv'));tx.oncomplete=()=>res(q&&q.result);tx.onerror=()=>rej(tx.error);}catch(e){rej(e);}};
+});}
+async function perm(h,ask){
+  try{const o={mode:'readwrite'};
+    if(await h.queryPermission(o)==='granted')return true;
+    if(ask&&await h.requestPermission(o)==='granted')return true;}catch(e){}
+  return false;
+}
+function scheduleWrite(){clearTimeout(wtimer);wtimer=setTimeout(writeNow,700);}
+function writeNow(){
+  clearTimeout(wtimer);
+  if(!fh)return wq;
+  wq=wq.then(async()=>{
+    try{const w=await fh.createWritable();await w.write(JSON.stringify(store));await w.close();fstat='ok';fwhen=Date.now();}
+    catch(e){fstat=e&&e.name==='NotAllowedError'?'ask':'err';}
+    fileUI();
+  });
+  return wq;
+}
+function fileUI(){if(view==='home')render();}
+async function readJSON(h){const t=(await(await h.getFile()).text()).trim();return t?JSON.parse(t):null;}
+async function syncFromFile(){
+  try{
+    const s=await readJSON(fh);
+    if(valid(s)&&(s.t||0)>(store.t||0)){
+      adopt(s);try{localStorage.setItem(KEY,JSON.stringify(store));}catch(e){}
+      toast('Progress loaded from '+fname);fstat='ok';
+    }else{await writeNow();return;}
+    fwhen=Date.now();
+  }catch(e){fstat='err';}
+}
+async function initFile(){
+  if(!FSA)return;
+  try{fh=await idb('readonly',s=>s.get('fh'))||null;}catch(e){fh=null;}
+  if(!fh)return;
+  fname=fh.name;
+  if(await perm(fh,false))await syncFromFile();else fstat='ask';
+  fileUI();
+}
+async function fileReconnect(){
+  if(!fh)return;
+  if(await perm(fh,true)){await syncFromFile();}else{fstat='ask';toast('Permission not granted');}
+  fileUI();
+}
+async function fileNew(){
+  try{
+    const h=await showSaveFilePicker({suggestedName:'hanzi-drill-progress.json',types:FTYPES});
+    fh=h;fname=h.name;try{await idb('readwrite',s=>s.put(h,'fh'));}catch(e){}
+    await writeNow();toast('Saving progress to '+fname);
+  }catch(e){if(!e||e.name!=='AbortError')toast('Couldn’t create that file');}
+  fileUI();
+}
+async function fileOpen(){
+  try{
+    const[h]=await showOpenFilePicker({types:FTYPES});
+    const s=await readJSON(h);
+    if(s&&!valid(s)){toast('That isn’t a Hanzi Drill progress file');return;}
+    if(s&&Object.keys(store.srs).length&&!confirm('Replace the progress on this device with the contents of '+h.name+'?'))return;
+    if(s)adopt(s);
+    fh=h;fname=h.name;try{await idb('readwrite',s2=>s2.put(h,'fh'));}catch(e){}
+    save();await writeNow();toast('Linked to '+fname);
+  }catch(e){if(!e||e.name!=='AbortError')toast('Couldn’t open that file');}
+  fileUI();
+}
+async function fileUnlink(){
+  fh=null;fname='';fstat=FSA?'none':'nosupport';
+  try{await idb('readwrite',s=>s.delete('fh'));}catch(e){}
+  fileUI();
+}
+const hhmm=t=>new Date(t).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+
+/* ---------- speech & toast ---------- */
+let warned=false,tt;
+function speak(t){
+  if(!('speechSynthesis' in window)){toast('Speech isn’t available in this browser');return;}
+  const vs=speechSynthesis.getVoices(),v=vs.find(v=>/^zh[-_]?(CN|Hans)/i.test(v.lang))||vs.find(v=>/^zh/i.test(v.lang));
+  if(!v&&vs.length&&!warned){warned=true;toast('No Chinese voice is installed on this device');}
+  const u=new SpeechSynthesisUtterance(t);u.lang='zh-CN';u.rate=.8;if(v)u.voice=v;
+  speechSynthesis.cancel();speechSynthesis.speak(u);
+}
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),2600);}
+
+/* ---------- html builders ---------- */
+/* lim: characters above this HSK level are greyed out */
+const hzHTML=(w,link,lim)=>[...w].map(c=>{
+  const e=IDX.get(c);if(!e)return`<span class="out">${esc(c)}</span>`;
+  const cls='in'+(lim&&e.level>lim?' out':'');
+  return link?`<a class="${cls}" data-act="open" data-k="c:${c}">${c}</a>`:`<span class="${cls}">${c}</span>`;
+}).join('');
+const spk=t=>'speechSynthesis' in window?`<button class="ico" data-act="speak" data-t="${esc(t)}" aria-label="Play sound">🔊</button>`:'';
+function wordRow(w,link,lim){
+  return`<div class="wrow"><div class="wh hz" lang="zh-Hans">${hzHTML(w.hz,link,lim)}</div><div class="wp">${pyHTML(w.py)} ${lvTag(w.level)}</div><div class="wm">${esc(w.gloss)}</div>${spk(w.hz)}</div>`;
+}
+function charDetail(e){
+  const ws=e.words.slice(0,8),oth=ws.length<3?e.other.slice(0,3-ws.length):[];
+  return`<div class="det"><div class="big hz" lang="zh-Hans">${e.hz}</div>
+  <div class="py">${e.py.map(pyHTML).join('<span class="sep"> · </span>')} ${spk(e.hz)}</div>
+  <div class="mean">${esc(e.mean)}</div>
+  <div class="mute sm c">${lvTag(e.level)}</div>
+  ${ws.length?`<h4>Example words · only HSK ${lvName(e.level)} or lower characters</h4><div class="words">${ws.map(w=>wordRow(w,true,e.level)).join('')}</div>`:''}
+  ${oth.length?`<h4>${ws.length?'Also':'Only found'} in words with higher-level characters</h4><div class="words">${oth.map(w=>wordRow(w,true,e.level)).join('')}</div>`:''}
+  ${!ws.length&&!oth.length?'<h4>Words</h4><p class="mute sm">No multi-character words in the list use this character.</p>':''}</div>`;
+}
+function wordDetail(w){
+  const syl=w.py.trim().split(/\s+/);
+  const parts=w.chars.map((c,i)=>{
+    const e=IDX.get(c);
+    return`<div class="part"><div class="hz ph" lang="zh-Hans">${e?`<a class="in" data-act="open" data-k="c:${c}">${c}</a>`:esc(c)}</div><div>${syl[i]?pyHTML(syl[i]):''}</div><div class="pm">${e?lvTag(e.level)+' '+esc(short(e.mean)):''}</div></div>`;
+  }).join('');
+  return`<div class="det"><div class="big hz w" lang="zh-Hans">${hzHTML(w.hz,false)}</div>
+  <div class="py">${w.pys.map(pyHTML).join('<span class="sep"> · </span>')} ${spk(w.hz)}</div><div class="mean">${esc(w.gloss)}</div>
+  <div class="mute sm c">${lvTag(w.level)}</div>
+  <h4>Characters</h4><div class="parts">${parts}</div></div>`;
+}
+const detailHTML=it=>it.kind==='c'?charDetail(IDX.get(it.hz)):wordDetail(WIDX.get(it.hz));
+const frontFwd=it=>`<div class="big hz ${it.kind==='w'?'w':''}" lang="zh-Hans">${it.kind==='w'?hzHTML(it.hz,false):it.hz}</div>`;
+const meanOf=it=>it.kind==='c'?short(it.mean):it.mean;
+const frontRev=it=>`<div class="py">${pyHTML(it.py[0])}</div><div class="mean">${esc(meanOf(it))}</div><div class="mute c" style="margin-top:8px">Which ${it.kind==='c'?'character':'word'}?</div>`;
+function segBtns(name,val,opts){return`<div class="seg">${opts.map(([v,l])=>`<button class="${v===val?'on':''}" data-act="set" data-n="${name}" data-v="${v}">${l}</button>`).join('')}</div>`;}
+
+/* ---------- views ---------- */
+let view='home',sess=null,bq='',bs='all',bl='all';
+function fileBanner(){
+  if(fstat==='ask')return`<div class="warn">Progress file <b>${esc(fname)}</b> needs permission again after restarting the browser.<br><button class="btn pri" data-act="freconnect">Reconnect</button></div>`;
+  if(fstat==='err')return`<div class="warn">Couldn’t write to <b>${esc(fname)}</b>. Progress is still kept in this browser. <button class="btn" data-act="freconnect">Retry</button></div>`;
+  if(fh&&fstat==='ok')return`<div class="filebar"><span>💾 Saving to <b>${esc(fname)}</b>${fwhen?' · '+hhmm(fwhen):''}</span></div>`;
+  if(FSA)return`<div class="filebar"><span>Progress lives in this browser only.</span><a data-act="fnew">Save to a file…</a></div>`;
+  return'';
+}
+function fileBox(){
+  if(!FSA)return`<div class="filebox">This browser can’t write to a file by itself (browsers don’t allow a page to save next to itself). Progress is saved automatically in the browser; use <b>Export</b> for a backup file and <b>Import</b> to restore it. Chrome/Edge on a computer can save to a file directly.</div>`;
+  return`<div class="filebox"><b>Progress file</b><br>${fh?`Linked: <b>${esc(fname)}</b> — every answer is written to it.`:'Not linked. Pick a file (e.g. in the same folder as this app) and every answer will be saved to it.'}
+    <div class="row"><button class="btn" data-act="fnew">Create new file</button><button class="btn" data-act="fopen">Open existing</button>${fh?'<button class="btn" data-act="funlink">Unlink</button>':''}</div></div>`;
+}
+function homeView(){
+  const S=store.set,P=pool(),c=counts(P),q=buildQueue(false),L=sel();
+  const nNew=q.filter(i=>!store.srs[i.key]).length,nDue=q.length-nNew;
+  const bar=k=>`<i class="s-${k}" style="flex:${c[k]}"></i>`;
+  const today=(store.log[dayKey(new Date())]||{n:0}).n;
+  const what=S.target==='c'?'characters':'words';
+  const nc=ITEMS.c.filter(i=>L.includes(i.level)).length,nw=ITEMS.w.filter(i=>L.includes(i.level)).length;
+  const lvc=n=>`<button class="lvc ${L.includes(n)?'on':''}" data-act="lvl" data-v="${n}" aria-pressed="${L.includes(n)}"><b>HSK ${lvName(n)}</b><small>${ITEMS.c.filter(i=>i.level===n).length} chars · ${ITEMS.w.filter(i=>i.level===n).length} words</small></button>`;
+  return`
+  <header class="hd"><div class="logo hz" lang="zh-Hans">汉字</div><div><h1>Hanzi Drill</h1><div class="mute sm">${CH.length} characters · ${WORDS.length} words · HSK 3.0 · levels ${LV.length>1?lvName(LV[0])+'–'+lvName(LV[LV.length-1]):lvName(LV[0])} · offline</div></div></header>
+  ${saveOK?'':'<div class="warn">Progress can’t be saved in this browser mode. Use Export (below) to keep it.</div>'}
+  ${fileBanner()}
+  <section class="card">
+    <div class="lbl">HSK levels to drill <b>${L.length===LV.length?'all':L.join(', ')}</b></div>
+    <div class="lvls">${LV.map(lvc).join('')}</div>
+    ${LV.length>1?`<div class="quick"><button class="chip ${L.length===LV.length?'on':''}" data-act="lvall">All levels</button></div>`:''}
+    <div class="mute sm">${nc} characters and ${nw} words in play. Words are only quizzed as <i>multi-character</i> words; single-character words are in the character drill.</div>
+  </section>
+  <section class="card">
+    <div class="lbl">Drill</div>${segBtns('target',S.target,[['c','Characters'],['w','Words']])}
+    <div class="lbl">Method</div>${segBtns('method',S.method,[['flip','Flashcards'],['type','Type pinyin'],['choice','Multiple choice']])}
+    ${S.method==='flip'?`<div class="lbl">Card direction</div>${segBtns('dir',S.dir,[['fwd','Hanzi → meaning'],['rev','Meaning → hanzi']])}`:''}
+    <div class="bar">${bar('new')}${bar('learn')}${bar('rev')}${bar('known')}</div>
+    <div class="legend"><span><i class="dot s-new"></i>${c.new} new</span><span><i class="dot s-learn"></i>${c.learn} learning</span><span><i class="dot s-rev"></i>${c.rev} reviewing</span><span><i class="dot s-known"></i>${c.known} known</span></div>
+    ${P.length?'':`<div class="mute sm">No ${what} at these levels yet.</div>`}
+    <button class="btn pri block" data-act="start" ${q.length?'':'disabled'}>${q.length?`Start · ${nDue} due, ${nNew} new`:'Nothing due right now'}</button>
+    <button class="btn block ghost" data-act="cram" ${P.length?'':'disabled'}>Practise anyway · 20 weakest ${what}</button>
+  </section>
+  <section class="card row2"><div><b>${today}</b><div class="mute sm">answered today</div></div><div><b>${streak()}</b><div class="mute sm">day streak</div></div></section>
+  <button class="btn block" data-act="browse">Browse all characters</button>
+  <details class="card" data-det ${setOpen?'open':''}><summary>Settings &amp; backup</summary>
+    <div class="setrow"><label for="newPer">New cards per session</label><select id="newPer" data-sel="newPer">${[5,10,15,20,30].map(n=>`<option ${n===S.newPer?'selected':''}>${n}</option>`).join('')}</select></div>
+    <label class="chk"><input type="checkbox" data-chk="colors" ${S.colors?'checked':''}><span>Colour pinyin by tone (1 red · 2 green · 3 blue · 4 purple · neutral grey)</span></label>
+    <label class="chk"><input type="checkbox" data-chk="auto" ${S.auto?'checked':''}><span>Speak the answer automatically (needs a Chinese voice installed on this device)</span></label>
+    ${fileBox()}
+    <div class="row"><button class="btn" data-act="export">Export progress</button><button class="btn" data-act="import">Import</button><button class="btn" data-act="wipe">Reset all</button></div>
+    <input type="file" id="file" accept="application/json,.json" hidden>
+    <div class="lbl" style="margin-top:18px">Word lists</div>
+    <div class="filebox" style="margin-top:0">${LV.map(n=>`HSK ${lvName(n)}: <b>${ALLW.filter(w=>w.level===n).length}</b> words <span class="mute">(${USER[n]?'imported':'built in'})</span>`).join('<br>')}</div>
+    <p class="mute sm" style="margin:0 0 8px">Add the level files from <i>complete-hsk-vocabulary</i> (e.g. <code>2.json</code> … <code>7.json</code>, “new”/HSK 3.0). Select several at once. The level comes from the file name: <code>3.json</code> = HSK 3 (7 = HSK 7–9). Re-adding a level replaces it. Text files with <code>hanzi | pinyin | meaning | level</code> lines also work.</p>
+    <div class="row" style="margin-top:0"><button class="btn" data-act="addwords">Add word list files</button>${Object.keys(USER).length?'<button class="btn" data-act="clearwords">Remove imported</button>':''}</div>
+    <input type="file" id="wfile" accept=".json,.txt,.csv,.tsv,application/json,text/plain,text/csv" multiple hidden>
+    <p class="mute sm">Progress is also kept in this browser. Export a backup now and then, especially before clearing site data.</p>
+  </details>`;
+}
+function sessionView(){
+  const c=cur(),m=store.set.method,pct=Math.round(sess.i/sess.queue.length*100);
+  const body=m==='flip'?flipBody(c):m==='type'?typeBody(c):choiceBody(c);
+  return`<header class="top"><button class="btn ghost" data-act="quit">← Quit</button><div class="prog"><i style="width:${pct}%"></i></div><span class="mute sm">${sess.i+1}/${sess.queue.length}</span></header>${body}`;
+}
+function flipBody(c){
+  const it=c.it,fwd=store.set.dir==='fwd';
+  if(c.phase==='q')return`<div class="card center tap" data-act="flip">${fwd?frontFwd(it):frontRev(it)}</div><button class="btn pri block" data-act="flip">Show answer <kbd>space</kbd></button>`;
+  const L=['Again','Hard','Good','Easy'];
+  return`<div class="card">${detailHTML(it)}</div><div class="rate">${L.map((l,q)=>`<button class="btn r${q}" data-act="rate" data-q="${q}"><b>${l}</b><small>${sess.cram?'':fmtDur(nextState(store.srs[it.key],q).ms)}</small></button>`).join('')}</div>`;
+}
+function typeBody(c){
+  const it=c.it,front=`<div class="card center">${frontFwd(it)}</div>`;
+  if(c.phase==='q')return`${front}<form class="ansrow" data-form="check"><input id="ans" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="pinyin + tone, e.g. ni3 hao3" value="${esc(sess.input)}" aria-label="Pinyin answer"><button class="btn pri" type="submit">Check</button></form><p class="hint">Tone numbers (ma3) or marks (mǎ) both work; type v for ü. Neutral tone: no number. Use dictionary tones (no tone-change rules). Not sure? <a data-act="giveup">Show answer</a></p>`;
+  const M={ok:['ok','✓ Correct'],tone:['warn','Right sounds — check the tones'],bad:['bad','✗ Not quite'],skip:['bad','Answer']}[c.res];
+  const detail=c.res==='ok'?'':`<div>You typed: <b>${esc(sess.input||'—')}</b></div><div>Expected: ${it.py.map(pyHTML).join(' · ')}</div>`;
+  return`${front}<div class="ver ${M[0]}"><b>${M[1]}</b>${detail}</div><div class="card">${detailHTML(it)}</div><button class="btn pri block" data-act="next">Next <kbd>↵</kbd></button>`;
+}
+function choiceBody(c){
+  const it=c.it,q=c.q;
+  const prompt=q.t==='h2m'?`${frontFwd(it)}<div class="mute c">What does it mean?</div>`:q.t==='h2p'?`${frontFwd(it)}<div class="mute c">How is it pronounced?</div>`:frontRev(it);
+  const opts=q.opts.map((o,i)=>{
+    let cls='opt';if(c.phase==='a'){if(o===q.correct)cls+=' ok';else if(i===c.pick)cls+=' bad';}
+    const lab=q.t==='h2p'?pyHTML(o):q.t==='m2h'?`<span class="hz ochz" lang="zh-Hans">${esc(o)}</span>`:esc(o);
+    return`<button class="${cls}" data-act="choose" data-i="${i}" ${c.phase==='a'?'disabled':''}><kbd>${i+1}</kbd>${lab}</button>`;
+  }).join('');
+  return`<div class="card center">${prompt}</div><div class="opts">${opts}</div>${c.phase==='a'?`<div class="card">${detailHTML(it)}</div><button class="btn pri block" data-act="next">Next <kbd>↵</kbd></button>`:''}`;
+}
+function summaryView(){
+  const acc=sess.n?Math.round(sess.ok/sess.n*100):0,missed=[...sess.missed.values()];
+  return`<div class="card center"><div class="mute">Session complete</div><div class="big hz" style="font-size:72px" lang="zh-Hans">${sess.ok}/${sess.n}</div><div class="mean">${acc}% right first time</div></div>
+  ${missed.length?`<div class="card"><div class="lbl">Worth another look</div><div class="quick">${missed.map(i=>`<button class="chip hz" lang="zh-Hans" data-act="open" data-k="${i.key}">${esc(i.hz)}</button>`).join('')}</div></div>`:''}
+  <button class="btn pri block" data-act="again">Another round</button><button class="btn block" data-act="home">Home</button>`;
+}
+const baseOf=s=>parseUser(s).base;
+function browseRows(){
+  const q=bq.trim().toLowerCase(),qb=baseOf(q);
+  const rows=ITEMS.c.map(i=>IDX.get(i.hz)).filter(e=>{
+    if(bl!=='all'&&e.level!==+bl)return false;
+    if(bs!=='all'&&status('c:'+e.hz)!==bs)return false;
+    if(!q)return true;
+    return e.hz.includes(q)||e.mean.toLowerCase().includes(q)||(qb&&e.py.some(p=>baseOf(p).includes(qb)))||e.words.concat(e.other).some(w=>w.hz.includes(q)||w.gloss.toLowerCase().includes(q));
+  });
+  if(!rows.length)return'<p class="mute c">No matches.</p>';
+  return rows.map(e=>`<button class="brow" data-act="open" data-k="c:${e.hz}"><span class="rk">H${e.level>=7?"7+":e.level}</span><span class="hz bh" lang="zh-Hans">${e.hz}</span><span class="bm"><span>${e.py.map(pyHTML).join(' · ')}</span><span class="mute">${esc(short(e.mean))}</span></span><i class="dot s-${status('c:'+e.hz)}"></i></button>`).join('');
+}
+function browseView(){
+  return`<header class="top"><button class="btn ghost" data-act="home">← Back</button><input id="q" type="search" placeholder="Search hanzi, pinyin, meaning…" value="${esc(bq)}" autocomplete="off"></header>
+  <div class="top"><select id="bl" aria-label="Filter by HSK level"><option value="all">All levels</option>${LV.map(n=>`<option value="${n}" ${String(n)===bl?'selected':''}>HSK ${lvName(n)}</option>`).join('')}</select><select id="bs" aria-label="Filter by status">${[['all','Any status'],['new','New'],['learn','Learning'],['rev','Reviewing'],['known','Known']].map(([v,l])=>`<option value="${v}" ${v===bs?'selected':''}>${l}</option>`).join('')}</select></div><div id="brlist">${browseRows()}</div>`;
+}
+function showDlg(it){
+  const s=store.srs[it.key],dlg=$('#dlg');
+  dlg.innerHTML=`<div class="dlg">${detailHTML(it)}<div class="stat mute">Status: ${STAT[status(it.key)]}${s?` · seen ${s.r||0}× · missed ${s.l||0}×`:''}</div><div class="row"><button class="btn" data-act="known" data-k="${it.key}">I know this</button><button class="btn" data-act="reset1" data-k="${it.key}">Reset</button><button class="btn pri" data-act="closedlg">Close</button></div></div>`;
+  if(!dlg.open)dlg.showModal();
+}
+function render(){
+  document.body.classList.toggle('nocolor',!store.set.colors);
+  $('#app').innerHTML=view==='home'?homeView():view==='session'?sessionView():view==='summary'?summaryView():browseView();
+  if(view==='session'){
+    const c=cur();
+    if(store.set.method==='type'&&c.phase==='q'){const a=$('#ans');if(a)a.focus();}
+    if(c.phase==='a'&&store.set.auto&&!c.spoke){c.spoke=true;speak(c.it.hz);}
+  }
+}
+function setView(v){view=v;render();window.scrollTo(0,0);}
+
+/* ---------- session logic ---------- */
+const cur=()=>sess.queue[sess.i];
+function startSession(cram){
+  const q=buildQueue(cram);if(!q.length)return;
+  sess={queue:q.map(it=>({it})),i:0,cram,n:0,ok:0,missed:new Map(),input:''};
+  prep();setView('session');
+}
+function prep(){const c=cur();c.phase='q';c.res=null;c.spoke=false;sess.input='';if(store.set.method==='choice')c.q=makeChoice(c.it);}
+function makeChoice(it){
+  let P=pool().filter(x=>x.key!==it.key);
+  if(P.length<6)P=ITEMS[it.kind].filter(x=>x.key!==it.key);
+  const t=['h2m','h2p','m2h'][Math.floor(Math.random()*3)];
+  const txt=x=>t==='h2m'?meanOf(x):t==='h2p'?x.py[0]:x.hz;
+  const correct=txt(it),seen=new Set(t==='h2p'?it.py:[correct]),opts=[];
+  if(t==='h2p')for(const v of shuffle(toneVars(it.py[0]))){if(opts.length>=2)break;if(!seen.has(v)){opts.push(v);seen.add(v);}}
+  for(const x of shuffle(P.slice())){if(opts.length>=3)break;const s=txt(x);if(!seen.has(s)){opts.push(s);seen.add(s);}}
+  opts.push(correct);
+  return{t,correct,opts:shuffle(opts)};
+}
+function applyGrade(q){
+  const c=cur(),key=c.it.key;
+  if(!c.retry){
+    sess.n++;if(q>=2)sess.ok++;
+    if(!sess.cram||q<2)grade(key,q);
+    logAnswer(q>=2);save();
+  }
+  if(q===0){
+    sess.missed.set(key,c.it);
+    sess.queue.splice(Math.min(sess.queue.length,sess.i+4),0,{it:c.it,retry:true});
+  }
+}
+function advance(){
+  sess.i++;
+  if(sess.i>=sess.queue.length){view='summary';save();render();}else{prep();render();}
+  window.scrollTo(0,0);
+}
+function rate(q){const c=cur();if(!c||c.phase!=='a')return;applyGrade(q);advance();}
+function choose(i){const c=cur();if(c.phase!=='q')return;c.pick=i;c.phase='a';applyGrade(c.q.opts[i]===c.q.correct?2:0);render();}
+function check(){
+  const c=cur(),a=$('#ans'),v=a?a.value.trim():'';if(!v||c.phase!=='q')return;
+  sess.input=v;c.res=gradePinyin(v,c.it.py);c.phase='a';applyGrade(c.res==='ok'?2:0);render();
+}
+function giveUp(){const c=cur();if(c.phase!=='q')return;sess.input='';c.res='skip';c.phase='a';applyGrade(0);render();}
+
+/* ---------- importing word lists ---------- */
+async function importLists(files){
+  if(!files.length)return;
+  const add={},notes=[];
+  for(const f of files){
+    let txt='';try{txt=await f.text();}catch(e){notes.push(f.name+': unreadable');continue;}
+    if(/^\s*[\[{]/.test(txt)){
+      let arr;try{arr=JSON.parse(txt);}catch(e){notes.push(f.name+': not valid JSON');continue;}
+      if(arr&&!Array.isArray(arr)&&Array.isArray(arr.words))arr=arr.words;
+      let g=HSKCONV.group(arr,f.name);
+      if(!g){
+        const a=prompt('Which HSK level is “'+f.name+'”? (1–7; 7 = HSK 7–9)','');
+        const n=+a;if(!(n>=1&&n<=9)||!Array.isArray(arr)){notes.push(f.name+': skipped (no level)');continue;}
+        g={[n]:arr};
+      }
+      for(const lv in g){const s=HSKCONV.toText(g[lv]);if(s){add[lv]=s;notes.push('HSK '+lvName(+lv)+': '+s.split('\n').length+' words');}}
+    }else{
+      const p=parseWordText(txt),by={};
+      p.rows.forEach(w=>{(by[w.level]=by[w.level]||[]).push(w.hz+'|'+w.py+'|'+w.mean);});
+      for(const lv in by){add[lv]=(add[lv]?add[lv]+'\n':'')+by[lv].join('\n');notes.push('HSK '+lvName(+lv)+': '+by[lv].length+' words');}
+      if(!p.rows.length)notes.push(f.name+': no usable lines');
+    }
+  }
+  if(!Object.keys(add).length){toast(notes[0]||'Nothing to import');return;}
+  const next={...USER,...add};
+  try{localStorage.setItem(LKEY,JSON.stringify(next));}
+  catch(e){toast('Not enough browser storage for these lists');return;}
+  alert('Imported:\n'+notes.join('\n')+'\n\nThe app will reload.');
+  location.reload();
+}
+
+/* ---------- events ---------- */
+const ACT={
+  set(el){store.set[el.dataset.n]=el.dataset.v;save();render();},
+  lvl(el){
+    const n=+el.dataset.v,L=sel().slice(),i=L.indexOf(n);
+    if(i>=0){if(L.length>1)L.splice(i,1);}else L.push(n);
+    store.set.levels=L.sort((a,b)=>a-b);save();render();
+  },
+  lvall(){store.set.levels=LV.slice();save();render();},
+  start(){startSession(false);},
+  cram(){startSession(true);},
+  browse(){setView('browse');},
+  home(){setView('home');},
+  quit(){save();setView('home');},
+  again(){if(!buildQueue(sess.cram).length){setView('home');toast('Nothing else is due');}else startSession(sess.cram);},
+  flip(){const c=cur();if(c&&c.phase==='q'){c.phase='a';render();}},
+  rate(el){rate(+el.dataset.q);},
+  choose(el){choose(+el.dataset.i);},
+  giveup(){giveUp();},
+  next(){const c=cur();if(c&&c.phase==='a')advance();},
+  speak(el){speak(el.dataset.t);},
+  open(el){const it=ITEM.get(el.dataset.k);if(it)showDlg(it);},
+  closedlg(){$('#dlg').close();},
+  known(el){const k=el.dataset.k,s=store.srs[k]||{r:0,l:0};s.b=5;s.due=Date.now()+STEPS[5];store.srs[k]=s;save();showDlg(ITEM.get(k));if(view!=='session')render();},
+  reset1(el){const k=el.dataset.k;delete store.srs[k];save();showDlg(ITEM.get(k));if(view!=='session')render();},
+  fnew(){fileNew();},
+  fopen(){fileOpen();},
+  funlink(){fileUnlink();},
+  freconnect(){fileReconnect();},
+  export(){
+    const b=new Blob([JSON.stringify(store)],{type:'application/json'}),a=document.createElement('a');
+    a.href=URL.createObjectURL(b);a.download='hanzi-drill-progress.json';document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  },
+  import(){$('#file').click();},
+  addwords(){$('#wfile').click();},
+  clearwords(){if(confirm('Remove the word lists you imported and go back to the built-in ones? (Your progress is kept.)')){try{localStorage.removeItem(LKEY);}catch(e){}location.reload();}},
+  wipe(){if(confirm('Erase all progress on this device?')){store.srs={};store.log={};save();render();toast('Progress reset');}}
+};
+document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(el&&ACT[el.dataset.act])ACT[el.dataset.act](el,e);});
+document.addEventListener('toggle',e=>{if(e.target.hasAttribute&&e.target.hasAttribute('data-det'))setOpen=e.target.open;},true);
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.id==='q'){bq=t.value;$('#brlist').innerHTML=browseRows();}
+});
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.dataset.sel){store.set[t.dataset.sel]=+t.value;save();render();}
+  else if(t.dataset.chk){store.set[t.dataset.chk]=t.checked;save();render();}
+  else if(t.id==='bs'){bs=t.value;$('#brlist').innerHTML=browseRows();}
+  else if(t.id==='bl'){bl=t.value;$('#brlist').innerHTML=browseRows();}
+  else if(t.id==='file'){
+    const f=t.files[0];if(!f)return;
+    const r=new FileReader();
+    r.onload=()=>{try{const s=JSON.parse(r.result);if(!valid(s))throw 0;adopt(s);store.t=Date.now();save();render();toast('Progress imported');}catch(x){toast('That isn’t a Hanzi Drill backup file');}};
+    r.readAsText(f);
+  }else if(t.id==='wfile'){
+    importLists([...t.files]);t.value='';
+  }
+});
+document.addEventListener('submit',e=>{if(e.target.dataset.form==='check'){e.preventDefault();check();}});
+$('#dlg').addEventListener('click',e=>{if(e.target===$('#dlg'))$('#dlg').close();});
+document.addEventListener('keydown',e=>{
+  if(view!=='session'||!sess||e.ctrlKey||e.metaKey||e.altKey||e.repeat||$('#dlg').open)return;
+  const c=cur(),m=store.set.method,k=e.key,num=k.length===1&&'1234'.includes(k);
+  if(m==='flip'){
+    if(c.phase==='q'&&(k===' '||k==='Enter')){e.preventDefault();ACT.flip();}
+    else if(c.phase==='a'){if(num)rate(+k-1);else if(k===' '||k==='Enter'){e.preventDefault();rate(2);}}
+  }else if(m==='type'){
+    if(c.phase==='a'&&(k==='Enter'||k===' ')){e.preventDefault();advance();}
+  }else{
+    if(c.phase==='q'&&num&&c.q.opts[+k-1]!==undefined)choose(+k-1);
+    else if(c.phase==='a'&&(k==='Enter'||k===' ')){e.preventDefault();advance();}
+  }
+});
+const flush=()=>{try{localStorage.setItem(KEY,JSON.stringify(store));}catch(e){}writeNow();};
+window.addEventListener('pagehide',flush);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)flush();});
+render();
+initFile();
+})();
+</script>
+</body>
+</html>
