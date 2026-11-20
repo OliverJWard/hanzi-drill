@@ -111,6 +111,18 @@ a.in{cursor:pointer;border-bottom:2px solid color-mix(in srgb,var(--acc) 45%,tra
 .opts{display:grid;gap:8px;margin:10px 0}
 .opt{font:inherit;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:14px;border-radius:12px;cursor:pointer;font-size:18px}
 .opt:disabled{opacity:1;cursor:default}
+/* draw mode: square writing box with a dashed centre cross (田字格) */
+.dwrap{display:flex;justify-content:center;margin:12px 0}
+.dw{position:relative;width:min(100%,340px);aspect-ratio:1/1;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.dw::before,.dw::after{content:"";position:absolute;pointer-events:none}
+.dw::before{left:50%;top:5%;bottom:5%;border-left:1px dashed var(--line)}
+.dw::after{top:50%;left:5%;right:5%;border-top:1px dashed var(--line)}
+.dw svg{position:relative;z-index:1;display:block}
+.slots{display:flex;justify-content:center;flex-wrap:wrap;gap:6px;margin-top:12px}
+.slot{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:10px;font-size:28px}
+.slot.on{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
+.slot.done{background:var(--chip)}
+.drow{display:flex;justify-content:center}
 .opt.ok{border-color:var(--ok);box-shadow:inset 0 0 0 2px var(--ok)}
 .opt.bad{border-color:var(--bad);box-shadow:inset 0 0 0 2px var(--bad)}
 .ochz{font-size:30px}
@@ -143,6 +155,9 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 <script src="hsk5.js"></script>
 <script src="hsk6.js"></script>
 <script src="hsk7.js"></script>
+<!-- Draw mode: Hanzi Writer 3.7.3 (MIT, see vendor/). Stroke data (strokesN.js,
+     from build_strokes.py) is loaded only when a character is first drawn. -->
+<script src="vendor/hanzi-writer.min.js"></script>
 <script>
 /* ============================================================
    HANZI DRILL · HSK 3.0 — fully offline.
@@ -971,7 +986,7 @@ function homeView(){
   </section>
   <section class="card">
     <div class="lbl">Drill</div>${segBtns('target',S.target,[['c','Characters'],['w','Words']])}
-    <div class="lbl">Method</div>${segBtns('method',S.method,[['flip','Flashcards'],['type','Type pinyin'],['choice','Multiple choice']])}
+    <div class="lbl">Method</div>${segBtns('method',S.method,[['flip','Flashcards'],['type','Type pinyin'],['choice','Multiple choice'],['draw','Draw']])}
     ${S.method==='flip'||S.method==='choice'?`<div class="lbl">Direction</div>${segBtns('dir',S.dir,[['fwd','Hanzi → meaning'],['rev','Meaning → hanzi']])}`:''}
     <div class="bar">${bar('new')}${bar('learn')}${bar('rev')}${bar('known')}</div>
     <div class="legend"><span><i class="dot s-new"></i>${c.new} new</span><span><i class="dot s-learn"></i>${c.learn} learning</span><span><i class="dot s-rev"></i>${c.rev} reviewing</span><span><i class="dot s-known"></i>${c.known} known</span></div>
@@ -998,7 +1013,7 @@ function homeView(){
 }
 function sessionView(){
   const c=cur(),m=store.set.method,pct=Math.round(sess.i/sess.queue.length*100);
-  const body=m==='flip'?flipBody(c):m==='type'?typeBody(c):choiceBody(c);
+  const body=m==='flip'?flipBody(c):m==='type'?typeBody(c):m==='draw'?drawBody(c):choiceBody(c);
   return`<header class="top"><button class="btn ghost" data-act="quit">← Quit</button><div class="prog"><i style="width:${pct}%"></i></div><span class="mute sm">${sess.i+1}/${sess.queue.length}</span></header>${body}`;
 }
 function flipBody(c){
@@ -1023,6 +1038,24 @@ function choiceBody(c){
     return`<button class="${cls}" data-act="choose" data-i="${i}" ${c.phase==='a'?'disabled':''}><kbd>${i+1}</kbd>${lab}</button>`;
   }).join('');
   return`<div class="card center">${prompt}</div><div class="opts">${opts}</div>${c.phase==='a'?`<div class="card">${detailHTML(it)}</div><button class="btn pri block" data-act="next">Next <kbd>↵</kbd></button>`:''}`;
+}
+/* draw mode: prompt is pinyin + meaning (pinyin alone is ambiguous); words are drawn one character at a time */
+function drawBody(c){
+  const it=c.it,d=c.dr,chars=[...it.hz],word=chars.length>1,done=i=>c.phase==='a'||i<d.ci;
+  const head=`<div class="py">${pyHTML(it.py[0])}</div><div class="mean">${esc(meanOf(it))}</div>`;
+  const slots=word?`<div class="slots">${chars.map((ch,i)=>`<span class="slot hz ${done(i)?'done':i===d.ci?'on':''}" lang="zh-Hans">${done(i)?esc(ch):''}</span>`).join('')}</div>`:'';
+  if(c.phase==='q'){
+    const ask=word?`Draw character ${d.ci+1} of ${chars.length}`:'Draw the character';
+    return`<div class="card center">${head}<div class="mute c" style="margin-top:8px">${ask}</div>${slots}</div>
+    <div class="dwrap"><div id="dw" class="dw" role="img" aria-label="Drawing area: draw the strokes in order"></div></div>
+    <div class="drow"><button class="btn" data-act="showme" ${d.busy?'disabled':''}>Show me</button></div>`;
+  }
+  const next=`<div class="card">${detailHTML(it)}</div><button class="btn pri block" data-act="next">Next <kbd>↵</kbd></button>`;
+  if(d.nodata)return`<div class="card center">${head}${slots}</div><div class="ver warn"><b>Can’t check this one</b><div>${esc(d.nodata)}</div></div>${next}`;
+  const g=drawGradeOf(d),tot=d.res.reduce((a,r)=>a+r.m,0),shown=d.res.some(r=>r.shown);
+  const M=[['bad','Again: worth another look soon'],['warn','Hard: drawn, with some mistakes'],['ok','✓ Drawn well']][g];
+  const note=(tot?`${tot} mistake${tot>1?'s':''}`:'No mistakes')+(shown?' · used “Show me”':'');
+  return`<div class="card center">${head}${slots}</div><div class="ver ${M[0]}"><b>${M[1]}</b><div>${note}</div></div>${next}`;
 }
 function summaryView(){
   const acc=sess.n?Math.round(sess.ok/sess.n*100):0,missed=[...sess.missed.values()];
@@ -1058,6 +1091,7 @@ function render(){
     const c=cur();
     if(store.set.method==='type'&&c.phase==='q'){const a=$('#ans');if(a)a.focus();}
     if(c.phase==='a'&&store.set.auto&&!c.spoke){c.spoke=true;speak(c.it.hz);}
+    if(store.set.method==='draw'&&c.phase==='q')mountDraw();
   }
 }
 function setView(v){view=v;render();window.scrollTo(0,0);}
@@ -1069,7 +1103,7 @@ function startSession(cram){
   sess={queue:q.map(it=>({it})),i:0,cram,n:0,ok:0,missed:new Map(),input:''};
   prep();setView('session');
 }
-function prep(){const c=cur();c.phase='q';c.res=null;c.spoke=false;sess.input='';if(store.set.method==='choice')c.q=makeChoice(c.it);}
+function prep(){const c=cur();c.phase='q';c.res=null;c.spoke=false;sess.input='';if(store.set.method==='choice')c.q=makeChoice(c.it);if(store.set.method==='draw')c.dr={ci:0,res:[],busy:false,nodata:null};}
 function makeChoice(it){
   let P=pool().filter(x=>x.key!==it.key);
   if(P.length<6)P=ITEMS[it.kind].filter(x=>x.key!==it.key);
@@ -1105,6 +1139,75 @@ function check(){
   sess.input=v;c.res=gradePinyin(v,c.it.py);c.phase='a';applyGrade(c.res==='ok'?2:0);render();
 }
 function giveUp(){const c=cur();if(c.phase!=='q')return;sess.input='';c.res='skip';c.phase='a';applyGrade(0);render();}
+
+/* ---------- draw mode ---------- */
+/* Stroke data comes from strokesN.js (window.HSK_STROKES), added with a <script> tag the
+   first time a character of that level is drawn, so normal start-up never parses ~8 MB. */
+const STROKE_FILES={};
+function loadStrokeFile(n){
+  return STROKE_FILES[n]||(STROKE_FILES[n]=new Promise(res=>{
+    const s=document.createElement('script');s.src='strokes'+n+'.js';
+    s.onload=()=>res(true);s.onerror=()=>res(false);document.head.appendChild(s);
+  }));
+}
+async function strokesFor(ch){
+  const get=()=>window.HSK_STROKES&&window.HSK_STROKES[ch];
+  if(get())return get();
+  const e=IDX.get(ch);   // try the character's own level first, then the rest
+  for(const n of[...(e&&e.level?[e.level]:[]),1,2,3,4,5,6,7]){await loadStrokeFile(n);if(get())return get();}
+  return null;
+}
+/* grade per character; a word gets its weakest character's grade.
+   0 = Again (used Show me, or 5+ mistakes), 1 = Hard (2-4), 2 = Good (0-1: allows one slip of the finger) */
+const drawGrade1=r=>r.shown?0:r.m<=1?2:r.m<=4?1:0;
+const drawGradeOf=d=>Math.min(...d.res.map(drawGrade1));
+let DW=null,dwTok=0;   // the live HanziWriter; dwTok invalidates callbacks from replaced writers
+function mountDraw(){
+  const c=cur(),d=c.dr,el=$('#dw');if(!el)return;
+  const tok=++dwTok,ch=[...c.it.hz][d.ci];
+  d.res[d.ci]=d.res[d.ci]||{m:0,shown:false};
+  if(!window.HanziWriter){drawNoData('The drawing library (vendor/hanzi-writer.min.js) didn’t load.');return;}
+  const css=getComputedStyle(document.documentElement),v=n=>css.getPropertyValue(n).trim();
+  const size=Math.floor(el.clientWidth);
+  DW=HanziWriter.create(el,ch,{
+    width:size,height:size,padding:Math.round(size*.05),
+    showCharacter:false,showOutline:false,
+    strokeColor:v('--ink'),drawingColor:v('--acc'),highlightColor:v('--warn'),outlineColor:v('--line'),
+    drawingWidth:Math.max(12,Math.round(size/22)),
+    charDataLoader:(x,ok,bad)=>{strokesFor(x).then(s=>s?ok(s):bad('missing'));},
+    onLoadCharDataError:()=>{if(tok===dwTok)drawNoData('No stroke data for '+ch+' (is strokes'+(IDX.get(ch)?.level||'N')+'.js missing?).');}
+  });
+  startDrawQuiz(tok);
+}
+function startDrawQuiz(tok){
+  const d=cur().dr,r=d.res[d.ci];
+  DW.quiz({
+    showHintAfterMisses:2,
+    onMistake:()=>{if(tok===dwTok)r.m++;},
+    onComplete:()=>{if(tok===dwTok)setTimeout(()=>{if(tok===dwTok)drawCharDone();},450);}
+  });
+}
+function drawCharDone(){
+  const c=cur();if(view!=='session'||!c||c.phase!=='q')return;
+  const d=c.dr;d.ci++;
+  if(d.ci<[...c.it.hz].length){render();return;}   // next character of the word
+  dwTok++;c.phase='a';applyGrade(drawGradeOf(d));render();
+}
+function drawNoData(msg){
+  const c=cur();if(!c||c.phase!=='q')return;
+  dwTok++;c.dr.nodata=msg;c.phase='a';render();   // not graded: Next just moves on
+}
+function showMe(){
+  const c=cur();if(!c||c.phase!=='q'||!DW||c.dr.busy)return;
+  const d=c.dr,tok=dwTok,btn=$('[data-act="showme"]');
+  d.res[d.ci].shown=true;d.busy=true;if(btn)btn.disabled=true;
+  DW.cancelQuiz();
+  DW.animateCharacter({onComplete:()=>{if(tok!==dwTok)return;
+    setTimeout(()=>{if(tok!==dwTok)return;
+      d.busy=false;const b=$('[data-act="showme"]');if(b)b.disabled=false;
+      DW.hideCharacter();startDrawQuiz(tok);   // now draw it yourself
+    },700);}});
+}
 
 /* ---------- importing word lists ---------- */
 async function importLists(files){
@@ -1156,6 +1259,7 @@ const ACT={
   rate(el){rate(+el.dataset.q);},
   choose(el){choose(+el.dataset.i);},
   giveup(){giveUp();},
+  showme(){showMe();},
   next(){const c=cur();if(c&&c.phase==='a')advance();},
   speak(el){speak(el.dataset.t);},
   open(el){const it=ITEM.get(el.dataset.k);if(it)showDlg(it);},
@@ -1205,7 +1309,7 @@ document.addEventListener('keydown',e=>{
   if(m==='flip'){
     if(c.phase==='q'&&(k===' '||k==='Enter')){e.preventDefault();ACT.flip();}
     else if(c.phase==='a'){if(num)rate(+k-1);else if(k===' '||k==='Enter'){e.preventDefault();rate(2);}}
-  }else if(m==='type'){
+  }else if(m==='type'||m==='draw'){
     if(c.phase==='a'&&(k==='Enter'||k===' ')){e.preventDefault();advance();}
   }else{
     if(c.phase==='q'&&num&&c.q.opts[+k-1]!==undefined)choose(+k-1);

@@ -23,3 +23,14 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+----------------------------------------------------------------------
+
+Draw mode uses two more third-party components, each with its own license:
+
+- vendor/hanzi-writer.min.js: Hanzi Writer 3.7.3 by David Chanin
+  (github.com/chanind/hanzi-writer), MIT License. See
+  vendor/hanzi-writer.LICENSE.txt.
+- strokes1.js ... strokes7.js: stroke data from hanzi-writer-data 2.0.1
+  (github.com/chanind/hanzi-writer-data), derived from Arphic fonts and
+  distributed under the Arphic Public License. See vendor/ARPHICPL.TXT.
