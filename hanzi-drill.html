@@ -972,7 +972,7 @@ function homeView(){
   <section class="card">
     <div class="lbl">Drill</div>${segBtns('target',S.target,[['c','Characters'],['w','Words']])}
     <div class="lbl">Method</div>${segBtns('method',S.method,[['flip','Flashcards'],['type','Type pinyin'],['choice','Multiple choice']])}
-    ${S.method==='flip'?`<div class="lbl">Card direction</div>${segBtns('dir',S.dir,[['fwd','Hanzi → meaning'],['rev','Meaning → hanzi']])}`:''}
+    ${S.method==='flip'||S.method==='choice'?`<div class="lbl">Direction</div>${segBtns('dir',S.dir,[['fwd','Hanzi → meaning'],['rev','Meaning → hanzi']])}`:''}
     <div class="bar">${bar('new')}${bar('learn')}${bar('rev')}${bar('known')}</div>
     <div class="legend"><span><i class="dot s-new"></i>${c.new} new</span><span><i class="dot s-learn"></i>${c.learn} learning</span><span><i class="dot s-rev"></i>${c.rev} reviewing</span><span><i class="dot s-known"></i>${c.known} known</span></div>
     ${P.length?'':`<div class="mute sm">No ${what} at these levels yet.</div>`}
@@ -1073,7 +1073,7 @@ function prep(){const c=cur();c.phase='q';c.res=null;c.spoke=false;sess.input=''
 function makeChoice(it){
   let P=pool().filter(x=>x.key!==it.key);
   if(P.length<6)P=ITEMS[it.kind].filter(x=>x.key!==it.key);
-  const t=['h2m','h2p','m2h'][Math.floor(Math.random()*3)];
+  const t=store.set.dir==='rev'?'m2h':(Math.random()<.5?'h2m':'h2p');
   const txt=x=>t==='h2m'?meanOf(x):t==='h2p'?x.py[0]:x.hz;
   const correct=txt(it),seen=new Set(t==='h2p'?it.py:[correct]),opts=[];
   if(t==='h2p')for(const v of shuffle(toneVars(it.py[0]))){if(opts.length>=2)break;if(!seen.has(v)){opts.push(v);seen.add(v);}}
